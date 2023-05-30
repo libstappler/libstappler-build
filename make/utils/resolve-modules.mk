@@ -24,6 +24,9 @@ define include_module_path =
 include $(1)
 endef
 
+LOCAL_MODULES_PATHS += $(BUILD_ROOT)/../module/module.mk
+LOCAL_MODULES += stappler_build_module
+
 $(foreach include,$(LOCAL_MODULES_PATHS),$(eval $(call include_module_path,$(include))))
 
 define emplace_module =
