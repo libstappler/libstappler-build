@@ -55,11 +55,17 @@ ifneq ($(verbose),yes)
 GLOBAL_QUIET_CC = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CC))] $@ ;
 GLOBAL_QUIET_CPP = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CPP))] $@ ;
 GLOBAL_QUIET_LINK = @ echo [Link] $@ ;
+GLOBAL_QUIET_GLSLC = @ echo [$(notdir $(GLSLC))] $(notdir $@) ;
+GLOBAL_QUIET_SPIRV_LINK = @ echo [$(notdir $(SPIRV_LINK))] $(notdir $@) ;
+GLOBAL_QUIET_SPIRV_EMBED = @ echo [embed] $(notdir $@) ;
 endif
 else
 GLOBAL_QUIET_CC = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CC))] $(notdir $@) ;
 GLOBAL_QUIET_CPP = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CPP))] $(notdir $@) ;
 GLOBAL_QUIET_LINK = @ echo [Link] $@ ;
+GLOBAL_QUIET_GLSLC = @ echo [$(notdir $(GLSLC))] $(notdir $@) ;
+GLOBAL_QUIET_SPIRV_LINK = @ echo [$(notdir $(SPIRV_LINK))] $(notdir $@) ;
+GLOBAL_QUIET_SPIRV_EMBED = @ echo [embed] $(notdir $@) ;
 endif
 
 BUILD_CFLAGS += $(LOCAL_CFLAGS) $(TOOLKIT_CFLAGS)
@@ -93,3 +99,14 @@ BUILD_CXXFLAGS += $(addprefix -I,$(BUILD_INCLUDES))
 BUILD_LIBS := $(foreach lib,$(LOCAL_LIBS),-L$(dir $(lib)) -l:$(notdir $(lib))) $(TOOLKIT_LIBS) $(GLOBAL_LDFLAGS) $(LDFLAGS)
 
 -include $(patsubst %.o,%.o.d,$(BUILD_OBJS) $(BUILD_MAIN_OBJ))
+
+include $(BUILD_ROOT)/shaders/apply.mk
+
+$(BUILD_OUTDIR)/%.o: /%.cpp $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
+	$(call sp_compile_cpp,$(BUILD_CXXFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
+
+$(BUILD_OUTDIR)/%.o: /%.mm $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
+	$(call sp_compile_mm,$(BUILD_CXXFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
+
+$(BUILD_OUTDIR)/%.o: /%.c $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
+	$(call sp_compile_c,$(BUILD_CFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))

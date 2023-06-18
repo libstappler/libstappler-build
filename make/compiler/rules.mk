@@ -37,12 +37,16 @@ sp_make_dep = #$(subst /,_,$1)
 
 sp_compile_gch = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
 	$(OSTYPE_GCH_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $@ $(call sp_convert_path,$<)
+
 sp_compile_c = $(GLOBAL_QUIET_CC) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CC) \
 	$(OSTYPE_C_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $@ $(call sp_convert_path,$<)
+
 sp_compile_cpp = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
 	$(OSTYPE_CPP_FILE) $(call sp_compile_dep, $@, $(1))  -c -o $@ $(call sp_convert_path,$<)
+
 sp_compile_mm = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
 	$(OSTYPE_MM_FILE) $(call sp_compile_dep, $@, $(1)) -fobjc-arc -c -o $@ $(call sp_convert_path,$<)
+
 sp_copy_header = @@$(GLOBAL_MKDIR) $(dir $@); cp -f $< $@
 
 $(call sp_toolkit_source_list, $($(TOOLKIT_NAME)_SRCS_DIRS), $($(TOOLKIT_NAME)_SRCS_OBJS))
@@ -104,7 +108,7 @@ sp_local_source_list = \
 		$(foreach dir,$(filter-out /%,$(1)),$(shell find $(LOCAL_ROOT)/$(dir) -name '*.mm'))\
 		$(filter /%,$(filter %.mm,$(2)))\
 		$(addprefix $(LOCAL_ROOT)/,$(filter-out /%,$(filter %.mm,$(2))))\
-	) \
+	)
 
 sp_local_include_list = \
 	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -type d)) \

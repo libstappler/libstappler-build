@@ -110,3 +110,6 @@ GLOBAL_MKDIR ?= mkdir -p
 GLOBAL_AR ?= ar rcs
 
 include $(BUILD_ROOT)/compiler/rules.mk
+include $(BUILD_ROOT)/shaders/compiler.mk
+
+BUILD_OUTDIR := $(BUILD_OUTDIR)/$(GLOBAL_CC)/$(BUILD_TYPE)
