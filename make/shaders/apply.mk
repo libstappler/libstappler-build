@@ -18,16 +18,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-BUILD_SHADERS_SRCS := $(realpath $(foreach dir,$(LOCAL_SHADERS_DIRS),$(wildcard $(dir)/*/*)))
+BUILD_SHADERS_SRCS := $(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*/*)))
 BUILD_SHADERS_COMPILED := $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(BUILD_SHADERS_SRCS))
-BUILD_SHADERS_LINKED := $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(realpath $(foreach dir,$(LOCAL_SHADERS_DIRS),$(wildcard $(dir)/*))))
-BUILD_SHADERS_EMBEDDED := $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(foreach dir,$(LOCAL_SHADERS_DIRS),$(wildcard $(dir)/*))))
-BUILD_SHADERS_TARGET_INCLUDE := $(addprefix -I$(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(LOCAL_SHADERS_DIRS)))
+BUILD_SHADERS_LINKED := $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*))))
+BUILD_SHADERS_EMBEDDED := $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*))))
+BUILD_SHADERS_TARGET_INCLUDE := $(addprefix -I$(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(LOCAL_SHADERS_DIR)))
+
+BUILD_SHADERS_INCLUDE = $(addprefix -I,$(realpath $(LOCAL_SHADERS_INCLUDE) $(TOOLKIT_SHADERS_INCLUDE)))
 
 $(BUILD_SHADERS_OUTDIR)/compiled/% : /%
 	$(call sp_compile_glsl)
 
-$(BUILD_SHADERS_OUTDIR)/linked/% : $(BUILD_SHADERS_COMPILED)
+$(BUILD_SHADERS_OUTDIR)/linked/% : $(BUILD_SHADERS_COMPILED) $(TOOLKIT_SHADERS_COMPILED)
 	$(call sp_link_spirv)
 
 $(BUILD_SHADERS_OUTDIR)/embedded/% : $(BUILD_SHADERS_OUTDIR)/linked/%

@@ -29,7 +29,13 @@ TOOLKIT_GCH := $(addsuffix .gch,$(TOOLKIT_H_GCH))
 
 TOOLKIT_OBJS := $(call sp_toolkit_object_list,$(BUILD_OUTDIR),$(TOOLKIT_SRCS))
 
-TOOLKIT_INPUT_CFLAGS := $(call sp_toolkit_include_flags,$(TOOLKIT_GCH),$(TOOLKIT_INCLUDES))
+TOOLKIT_SHADERS_SRCS := $(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*/*)))
+TOOLKIT_SHADERS_COMPILED := $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(TOOLKIT_SHADERS_SRCS))
+TOOLKIT_SHADERS_LINKED := $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*))))
+TOOLKIT_SHADERS_EMBEDDED := $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*))))
+TOOLKIT_SHADERS_TARGET_INCLUDE := $(addprefix -I$(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(TOOLKIT_SHADERS_DIR)))
+
+TOOLKIT_INPUT_CFLAGS := $(call sp_toolkit_include_flags,$(TOOLKIT_GCH),$(TOOLKIT_INCLUDES)) $(TOOLKIT_SHADERS_TARGET_INCLUDE)
 
 TOOLKIT_CXXFLAGS := $(GLOBAL_CXXFLAGS) $(TOOLKIT_FLAGS) $(TOOLKIT_INPUT_CFLAGS)
 TOOLKIT_CFLAGS := $(GLOBAL_CFLAGS) $(TOOLKIT_FLAGS) $(TOOLKIT_INPUT_CFLAGS)
@@ -72,19 +78,19 @@ $(1): $(patsubst %.h.gch,%.h,$(1)) $(call sp_make_dep,$(1)) $$(LOCAL_MAKEFILE) $
 endef
 
 define TOOLKIT_c_rule
-$(abspath $(addprefix $(2),$(patsubst %.c,%.o,$(1)))): $(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) \
+$(abspath $(addprefix $(2),$(patsubst %.c,%.o,$(1)))): $(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) $$(TOOLKIT_SHADERS_EMBEDDED) \
 		$(call sp_make_dep,$(abspath $(addprefix $(2),$(patsubst %.c,%.o,$(1))))) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES)
 	$$(call sp_compile_c,$(3))
 endef
 
 define TOOLKIT_cpp_rule
-$(abspath $(addprefix $(2),$(patsubst %.cpp,%.o,$(1)))): $(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) \
+$(abspath $(addprefix $(2),$(patsubst %.cpp,%.o,$(1)))): $(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) $$(TOOLKIT_SHADERS_EMBEDDED) \
 		$(call sp_make_dep,$(abspath $(addprefix $(2),$(patsubst %.cpp,%.o,$(1))))) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES)
 	$$(call sp_compile_cpp,$(3))
 endef
 
 define TOOLKIT_mm_rule
-$(abspath $(addprefix $(2),$(patsubst %.mm,%.o,$(1)))): $(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) \
+$(abspath $(addprefix $(2),$(patsubst %.mm,%.o,$(1)))): $(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) $$(TOOLKIT_SHADERS_EMBEDDED) \
 		$(call sp_make_dep,$(abspath $(addprefix $(2),$(patsubst %.mm,%.o,$(1))))) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES)
 	$$(call sp_compile_mm,$(3))
 endef
