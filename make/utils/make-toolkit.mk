@@ -33,7 +33,8 @@ TOOLKIT_SHADERS_SRCS := $(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildca
 TOOLKIT_SHADERS_COMPILED := $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(TOOLKIT_SHADERS_SRCS))
 TOOLKIT_SHADERS_LINKED := $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*))))
 TOOLKIT_SHADERS_EMBEDDED := $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*))))
-TOOLKIT_SHADERS_TARGET_INCLUDE := $(addprefix -I$(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(TOOLKIT_SHADERS_DIR)))
+TOOLKIT_SHADERS_TARGET_INCLUDE_DIR := $(abspath $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(TOOLKIT_SHADERS_DIR))))
+TOOLKIT_SHADERS_TARGET_INCLUDE := $(addprefix -I,$(TOOLKIT_SHADERS_TARGET_INCLUDE_DIR))
 
 TOOLKIT_INPUT_CFLAGS := $(call sp_toolkit_include_flags,$(TOOLKIT_GCH),$(TOOLKIT_INCLUDES)) $(TOOLKIT_SHADERS_TARGET_INCLUDE)
 

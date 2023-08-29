@@ -23,17 +23,18 @@
 # You can use ANDROID_NDK_ROOT env var
 NDK ?= $(ANDROID_NDK_ROOT)
 
-OSTYPE_PREBUILT_PATH := libs/android/$$(TARGET_ARCH_ABI)/lib
-OSTYPE_INCLUDE :=  libs/android/$$(TARGET_ARCH_ABI)/include
+OSTYPE_PREBUILT_PATH := deps/android/$$(TARGET_ARCH_ABI)/lib
+OSTYPE_INCLUDE :=  deps/android/$$(TARGET_ARCH_ABI)/include
 RESOLVE_LIBS_REALPATH := 1
 GLOBAL_CC := ndk-build
+GLOBAL_CPP := ndk-build
 
 ANDROID_EXPORT_PREFIX ?= $(GLOBAL_ROOT)
 ANDROID_EXPORT_PATH := $(if $(LOCAL_ROOT),,$(GLOBAL_ROOT)/)$(BUILD_OUTDIR)
 
 ifdef ANDROID_EXPORT
-TARGET_ARCH_ABI := $$(TARGET_ARCH_ABI)
-ANDROID_ARCH := $(TARGET_ARCH_ABI)
+#TARGET_ARCH_ABI := $$(TARGET_ARCH_ABI)
+#ANDROID_ARCH := $(TARGET_ARCH_ABI)
 endif
 
 android_lib_list = \
@@ -62,6 +63,8 @@ $(ANDROID_EXPORT_PATH)/Android.mk.tmp:
 		printf " \\\\\n\t$$file" >> $@; \
 	done
 	@echo ' \\' >> $@
+	@echo '\t$(BUILD_SHADERS_TARGET_INCLUDE_DIR) \\' >> $@
+	@echo '\t$(TOOLKIT_SHADERS_TARGET_INCLUDE_DIR) \\' >> $@
 	@echo '\t$(abspath $(GLOBAL_ROOT)/$(OSTYPE_INCLUDE))' >> $@
 	@echo 'LOCAL_WHOLE_STATIC_LIBRARIES := cpufeatures $(call android_lib_list,$(TOOLKIT_LIBS),build)' >> $@
 	@echo 'include $$(BUILD_STATIC_LIBRARY)' >> $@

@@ -22,7 +22,8 @@ BUILD_SHADERS_SRCS := $(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $
 BUILD_SHADERS_COMPILED := $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(BUILD_SHADERS_SRCS))
 BUILD_SHADERS_LINKED := $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*))))
 BUILD_SHADERS_EMBEDDED := $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*))))
-BUILD_SHADERS_TARGET_INCLUDE := $(addprefix -I$(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(LOCAL_SHADERS_DIR)))
+BUILD_SHADERS_TARGET_INCLUDE_DIR := $(abspath $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(LOCAL_SHADERS_DIR))))
+BUILD_SHADERS_TARGET_INCLUDE := $(addprefix -I,$(BUILD_SHADERS_TARGET_INCLUDE_DIR))
 
 BUILD_SHADERS_INCLUDE = $(addprefix -I,$(realpath $(LOCAL_SHADERS_INCLUDE) $(TOOLKIT_SHADERS_INCLUDE)))
 

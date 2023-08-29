@@ -20,6 +20,7 @@
 
 .DEFAULT_GOAL := all
 IS_LOCAL_BUILD := 1
+ANDROID := 1
 
 BUILD_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
@@ -32,9 +33,8 @@ THIS_FILE := $(firstword $(MAKEFILE_LIST))
 
 BUILD_LIBS_LIST := $(LOCAL_LIBS)
 
-include $(GLOBAL_ROOT)/make/utils/compiler.mk
+include $(BUILD_ROOT)/compiler/compiler.mk
 
-BUILD_OUTDIR := $(BUILD_OUTDIR)/$(BUILD_TYPE)/$(ANDROID_ARCH)
 GLOBAL_OUTPUT := $(BUILD_OUTDIR)
 
 ifeq ($(LOCAL_TOOLKIT),none)
@@ -47,7 +47,7 @@ LOCAL_SRCS_OBJS += $(realpath $(NDK)/sources/android/cpufeatures/cpu-features.c)
 endif
 endif
 
-include $(GLOBAL_ROOT)/make/utils/compile-local.mk
+include $(BUILD_ROOT)/compiler/apply.mk
 
 LOCAL_ANDROID_TARGET ?= application
 LOCAL_ANDROID_PLATFORM ?= android-24
@@ -65,7 +65,9 @@ else
 BUILD_ANDROID_ARGS += NDK_DEBUG=1
 endif
 
-all:
+android-export: $(BUILD_SHADERS_EMBEDDED) $(TOOLKIT_SHADERS_EMBEDDED)
+
+all:  $(BUILD_SHADERS_EMBEDDED) $(TOOLKIT_SHADERS_EMBEDDED)
 	+$(NDK)/ndk-build $(BUILD_ANDROID_ARGS) $(LOCAL_ANDROID_TARGET) --no-print-directory
 
 clean_local:
