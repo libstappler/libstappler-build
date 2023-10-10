@@ -32,7 +32,7 @@ OSTYPE_CFLAGS := -DMACOS -DUSE_FILE32API -Wall -fPIC -Wno-missing-braces \
 		-Wno-gnu-string-literal-operator-template -mmacosx-version-min=$(OS_VERSION_TARGET)
 OSTYPE_CPPFLAGS :=  -frtti -Wno-unneeded-internal-declaration
 
-OSTYPE_COMMON_LIBS :=
+OSTYPE_EXEC_SUFFIX :=
 
 OSTYPE_LDFLAGS := -mmacosx-version-min=$(OS_VERSION_TARGET)
 OSTYPE_EXEC_FLAGS := -mmacosx-version-min=$(OS_VERSION_TARGET)

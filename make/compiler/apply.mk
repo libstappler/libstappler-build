@@ -35,12 +35,6 @@ endif
 BUILD_CURRENT_COUNTER ?= 1
 BUILD_FILES_COUNTER ?= 1
 
-ifeq ($(UNAME),Cygwin)
-GLOBAL_PREBUILT_LIBS_PATH := $(GLOBAL_ROOT)/$(OSTYPE_PREBUILT_PATH)
-else
-GLOBAL_PREBUILT_LIBS_PATH := $(realpath $(GLOBAL_ROOT)/$(OSTYPE_PREBUILT_PATH))
-endif
-
 include $(BUILD_ROOT)/utils/resolve-modules.mk
 include $(BUILD_ROOT)/utils/make-toolkit.mk
 

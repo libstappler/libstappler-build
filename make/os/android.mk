@@ -25,17 +25,13 @@ NDK ?= $(ANDROID_NDK_ROOT)
 
 OSTYPE_PREBUILT_PATH := deps/android/$$(TARGET_ARCH_ABI)/lib
 OSTYPE_INCLUDE :=  deps/android/$$(TARGET_ARCH_ABI)/include
+OSTYPE_EXEC_SUFFIX :=
 RESOLVE_LIBS_REALPATH := 1
 GLOBAL_CC := ndk-build
 GLOBAL_CPP := ndk-build
 
 ANDROID_EXPORT_PREFIX ?= $(GLOBAL_ROOT)
 ANDROID_EXPORT_PATH := $(if $(LOCAL_ROOT),,$(GLOBAL_ROOT)/)$(BUILD_OUTDIR)
-
-ifdef ANDROID_EXPORT
-#TARGET_ARCH_ABI := $$(TARGET_ARCH_ABI)
-#ANDROID_ARCH := $(TARGET_ARCH_ABI)
-endif
 
 android_lib_list = \
 	$(foreach lib,$(filter %.a,($1)),$(2)_$(basename $(notdir $(lib)))_generic)

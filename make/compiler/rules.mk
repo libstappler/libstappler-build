@@ -120,10 +120,17 @@ sp_local_include_list = \
 sp_local_object_list = \
 	$(addprefix $(1),$(patsubst %.mm,%.o,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(realpath $(2))))))
 
+ifdef OSTYPE_IS_WIN32
+sp_toolkit_transform_lib = \
+	$(patsubst -l:lib%.a,-l%,$(1))
+else
+sp_toolkit_transform_lib = $(1)
+endif
+
 ifdef RESOLVE_LIBS_REALPATH
 sp_toolkit_resolve_libs = \
-	$(subst -l:,$(abspath $(1))/,$(2))
+	$(subst -l:,$(abspath $(1))/,$(call sp_toolkit_transform_lib,$(2)))
 else
 sp_toolkit_resolve_libs = \
-	-L$(abspath $(1)) $(2)
+	$(addprefix -L,$(1)) $(call sp_toolkit_transform_lib,$(2))
 endif

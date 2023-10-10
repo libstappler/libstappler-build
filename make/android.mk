@@ -24,28 +24,19 @@ ANDROID := 1
 
 BUILD_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
+LOCAL_ROOT ?= .
+
 BUILD_OUTDIR := $(LOCAL_OUTDIR)/android
+LOCAL_INSTALL_DIR ?= $(LOCAL_OUTDIR)/android
 
 GLOBAL_ROOT := $(STAPPLER_ROOT)
 GLOBAL_OUTPUT := $(BUILD_OUTDIR)
 
-THIS_FILE := $(firstword $(MAKEFILE_LIST))
-
-BUILD_LIBS_LIST := $(LOCAL_LIBS)
-
 include $(BUILD_ROOT)/compiler/compiler.mk
 
-GLOBAL_OUTPUT := $(BUILD_OUTDIR)
-
-ifeq ($(LOCAL_TOOLKIT),none)
-BUILD_EXPORT_STATIC := $(BUILD_OUTDIR)/$(LOCAL_LIBRARY).a
-else
 BUILD_LIBRARY := $(BUILD_OUTDIR)/$(LOCAL_LIBRARY).so
 BUILD_STATIC := $(BUILD_OUTDIR)/$(LOCAL_LIBRARY).a
-ifndef ANDROID_EXPORT
 LOCAL_SRCS_OBJS += $(realpath $(NDK)/sources/android/cpufeatures/cpu-features.c)
-endif
-endif
 
 include $(BUILD_ROOT)/compiler/apply.mk
 
@@ -60,8 +51,7 @@ BUILD_ANDROID_ARGS := \
 	NDK_APPLICATION_MK:=$(LOCAL_APPLICATION_MK) \
 	APP_PLATFORM=$(LOCAL_ANDROID_PLATFORM)
 
-ifdef RELEASE
-else
+ifndef RELEASE
 BUILD_ANDROID_ARGS += NDK_DEBUG=1
 endif
 

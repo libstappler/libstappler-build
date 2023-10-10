@@ -24,38 +24,62 @@ GLOBAL_ROOT ?= .
 UNAME := $(shell uname)
 
 ifneq ($(UNAME),Darwin)
-UNAME := $(shell uname -o)
+	UNAME := $(shell uname -o)
 endif
 
 ifeq ($(findstring MSYS_NT,$(UNAME)),MSYS_NT)
-UNAME := $(shell uname -o)
+	UNAME := $(shell uname -o)
 endif
 
 # Выбираем компиляторы, предпочитаем gcc/g++ если не заданы
 # Устанавливаем флаг, если компилируем с clang
 
 ifndef GLOBAL_CPP
-ifdef MINGW
-GLOBAL_CPP := $(MINGW)-g++
+	ifdef XWIN
+		# XWIN может использовать только clang версии 16+ для компиляции
+		CLANG_VERSION_GE_16 := $(shell echo `clang --version | grep -Eo '[0-9]+\.[0-9]+' | head -1` \>= 16.0 | bc)
+		ifeq ($(CLANG_VERSION_GE_16),1)
+			GLOBAL_CPP := clang++
+		else
+$(info Default clang below 16.0, C++ compiler set to clang++-16)
+			GLOBAL_CPP := clang++-16
+		endif
+		CLANG := 1
+	else
+		ifdef MINGW
+			GLOBAL_CPP := $(MINGW)-g++
+		else
+			GLOBAL_CPP := g++
+		endif # ifdef MINGW
+	endif
 else
-GLOBAL_CPP := g++
-endif # ifdef MINGW
-else
-ifneq (,$(findstring clang,$(GLOBAL_CPP)))
-CLANG := 1
-endif
+	ifneq (,$(findstring clang,$(GLOBAL_CPP)))
+		CLANG := 1
+	endif
 endif # ifndef GLOBAL_CPP
 
 ifndef GLOBAL_CC
-ifdef MINGW
-GLOBAL_CC := $(MINGW)-gcc
+	ifdef XWIN
+		# XWIN может использовать только clang версии 16+ для компиляции
+		CLANG_VERSION_GE_16 := $(shell echo `clang --version | grep -Eo '[0-9]+\.[0-9]+' | head -1` \>= 16.0 | bc)
+		ifeq ($(CLANG_VERSION_GE_16),1)
+			GLOBAL_CC := clang
+		else
+$(info Default clang below 16.0, C compiler set to clang-16)
+			GLOBAL_CC := clang-16
+		endif
+		CLANG := 1
+	else
+		ifdef MINGW
+			GLOBAL_CC := $(MINGW)-gcc
+		else
+			GLOBAL_CC := gcc
+		endif # ifdef MINGW
+	endif
 else
-GLOBAL_CC := gcc
-endif # ifdef MINGW
-else
-ifneq (,$(findstring clang,$(GLOBAL_CC)))
-CLANG := 1
-endif
+	ifneq (,$(findstring clang,$(GLOBAL_CC)))
+		CLANG := 1
+	endif
 endif # ifndef GLOBAL_CC
 
 # Выбираем оптимизацию по умолчанию
@@ -70,20 +94,22 @@ OSTYPE_MM_FILE := -x objective-c++
 
 # загружаем предустановки для систем
 ifeq ($(STAPPLER_TARGET),android)
-include $(BUILD_ROOT)/os/android.mk
+	include $(BUILD_ROOT)/os/android.mk
+else ifeq ($(STAPPLER_TARGET),xwin)
+	include $(BUILD_ROOT)/os/xwin.mk
 else ifeq ($(UNAME),Darwin)
-include $(BUILD_ROOT)/os/darwin.mk
+	include $(BUILD_ROOT)/os/darwin.mk
 else
-include $(BUILD_ROOT)/os/linux.mk
+	include $(BUILD_ROOT)/os/linux.mk
 endif
 
 # Вычисляем базовый набор флагов
 ifdef RELEASE
-BUILD_TYPE := release
-GLOBAL_CFLAGS := $(GLOBAL_OPTIMIZATION) -DNDEBUG $(OSTYPE_CFLAGS) $(GLOBAL_CFLAGS)
+	BUILD_TYPE := release
+	GLOBAL_CFLAGS := $(GLOBAL_OPTIMIZATION) -DNDEBUG $(OSTYPE_CFLAGS) $(GLOBAL_CFLAGS)
 else
-BUILD_TYPE := debug
-GLOBAL_CFLAGS := -g -DDEBUG -DSTAPPLER_ROOT=$(realpath $(GLOBAL_ROOT))  $(OSTYPE_CFLAGS) $(GLOBAL_CFLAGS)
+	BUILD_TYPE := debug
+	GLOBAL_CFLAGS := -g -DDEBUG -DSTAPPLER_ROOT=$(realpath $(GLOBAL_ROOT))  $(OSTYPE_CFLAGS) $(GLOBAL_CFLAGS)
 endif # ifdef RELEASE
 
 GLOBAL_STDXX ?= gnu++2a
@@ -95,12 +121,12 @@ GLOBAL_LDFLAGS :=
 
 # Если запрошено покрытие тестами  добавляем флаги профпайлинга
 ifdef COVERAGE
-ifndef CLANG
-BUILD_TYPE := coverage
-GLOBAL_CFLAGS += -fprofile-arcs -ftest-coverage
-GLOBAL_CXXFLAGS += -fprofile-arcs -ftest-coverage
-GLOBAL_LDFLAGS += -fprofile-arcs -ftest-coverage
-endif
+	ifndef CLANG
+		BUILD_TYPE := coverage
+		GLOBAL_CFLAGS += -fprofile-arcs -ftest-coverage
+		GLOBAL_CXXFLAGS += -fprofile-arcs -ftest-coverage
+		GLOBAL_LDFLAGS += -fprofile-arcs -ftest-coverage
+	endif
 endif
 
 GLOBAL_RM ?= rm -f

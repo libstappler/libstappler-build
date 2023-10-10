@@ -18,25 +18,35 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-OSTYPE_PREBUILT_PATH := deps/linux/x86_64/lib
-OSTYPE_INCLUDE :=  deps/linux/x86_64/include
+OSTYPE_ARCH ?= x86_64
+OSTYPE_PREBUILT_PATH := deps/linux/$(OSTYPE_ARCH)/lib
+OSTYPE_INCLUDE :=  deps/linux/$(OSTYPE_ARCH)/include
 OSTYPE_CFLAGS := -DLINUX -Wall -fPIC
 OSTYPE_CPPFLAGS := -Wno-overloaded-virtual -frtti
 
-OSTYPE_COMMON_LIBS :=
+OSTYPE_EXEC_SUFFIX :=
 
-OSTYPE_LDFLAGS := -Wl,-z,defs -rdynamic -fuse-ld=gold
-OSTYPE_EXEC_FLAGS := -fuse-ld=gold
+OSTYPE_LDFLAGS := -Wl,-z,defs -rdynamic
+OSTYPE_EXEC_FLAGS :=
+
+# ldgold only tested for x86_64 linux
+# For others - use default ld
+ifeq ($(OSTYPE_ARCH),x86_64)
+	OSTYPE_LDFLAGS += -fuse-ld=gold
+	OSTYPE_EXEC_FLAGS += -fuse-ld=gold
+endif
 
 ifeq ($(CLANG),1)
-OSTYPE_CPPFLAGS += -Wno-unneeded-internal-declaration
+	OSTYPE_CPPFLAGS += -Wno-unneeded-internal-declaration -Wno-gnu-string-literal-operator-template
+	OSTYPE_LDFLAGS +=
+	OSTYPE_EXEC_FLAGS +=
 else
-OSTYPE_CPPFLAGS += -Wno-class-memaccess
+	OSTYPE_CPPFLAGS += -Wno-class-memaccess
 endif
 
 ifeq ($(ASAN),1)
-OSTYPE_CFLAGS += -fsanitize=address
-OSTYPE_EXEC_FLAGS += -fsanitize=address -static-libasan
+	OSTYPE_CFLAGS += -fsanitize=address
+	OSTYPE_EXEC_FLAGS += -fsanitize=address -static-libasan
 else
 
 endif

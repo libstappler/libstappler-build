@@ -102,41 +102,43 @@ ios-all-clean:
 	@$(MAKE) STAPPLER_TARGET=ios ios-clean
 	@$(MAKE) STAPPLER_TARGET=ios RELEASE=1 ios-clean
 
-win32: win32-debug
-win32-clean: win32-debug-clean
+xwin: xwin-debug
+xwin-clean: xwin-debug-clean
 
-win32-debug:
-	@$(MAKE) STAPPLER_TARGET=win32 all
+xwin-debug:
+	@$(MAKE) STAPPLER_TARGET=xwin all
 
-win32-debug-clean:
-	@$(MAKE) STAPPLER_TARGET=win32 clean
+xwin-debug-clean:
+	@$(MAKE) STAPPLER_TARGET=xwin clean
 
-win32-release:
-	@$(MAKE) STAPPLER_TARGET=win32 RELEASE=1 all
+xwin-release:
+	@$(MAKE) STAPPLER_TARGET=xwin RELEASE=1 all
 
-win32-release-clean:
-	@$(MAKE) STAPPLER_TARGET=win32 RELEASE=1 clean
+xwin-release-clean:
+	@$(MAKE) STAPPLER_TARGET=xwin RELEASE=1 clean
 
-win32-all:
-	@$(MAKE) STAPPLER_TARGET=win32 win32
-	@$(MAKE) STAPPLER_TARGET=win32 RELEASE=1 win32
+xwin-all:
+	@$(MAKE) STAPPLER_TARGET=xwin xwin
+	@$(MAKE) STAPPLER_TARGET=xwin RELEASE=1 xwin
 
-win32-all-clean:
-	@$(MAKE) STAPPLER_TARGET=win32 win32-clean
-	@$(MAKE) STAPPLER_TARGET=win32 RELEASE=1 win32-clean
+xwin-all-clean:
+	@$(MAKE) STAPPLER_TARGET=xwin xwin-clean
+	@$(MAKE) STAPPLER_TARGET=xwin RELEASE=1 xwin-clean
 
 .PHONY: clean install
 .PHONY: host host-clean host-debug host-debug-clean host-release host-release-clean host-install host-coverage host-report
 .PHONY: android android-clean android-export android-debug android-debug-clean android-release android-release-clean
 .PHONY: ios ios-clean ios-debug ios-debug-clean ios-release ios-release-clean
-.PHONY: win32 win32-clean win32-debug win32-debug-clean win32-release win32-release-clean win32-all win32-all-clean
+.PHONY: xwin xwin-clean xwin-debug xwin-debug-clean xwin-release xwin-release-clean xwin-all xwin-all-clean
 
 else
 
 ifeq ($(STAPPLER_TARGET),host)
 include $(BUILD_ROOT)/host.mk
 else ifeq ($(STAPPLER_TARGET),android)
-include $(BUILD_ROOT)/android.standalone.mk
+include $(BUILD_ROOT)/android.mk
+else ifeq ($(STAPPLER_TARGET),xwin)
+include $(BUILD_ROOT)/xwin.mk
 endif
 
 endif
