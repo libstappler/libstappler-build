@@ -20,32 +20,38 @@
 
 # Функции для вывода правил компиляции
 
-ifeq ($(UNAME),Cygwin)
-sp_convert_path = $(shell cygpath -w $1)
-sp_unconvert_path =  $(1)
+ifdef MSYS
+sp_os_path = $(shell cygpath -u $(abspath $(1)))
 else
-sp_convert_path = $(1)
-sp_unconvert_path = $(1)
+sp_os_path = $(1)
 endif
 
+sp_convert_path = $(1)
+sp_unconvert_path = $(1)
+
 ifeq ($(CLANG),1)
-sp_compile_dep = -MMD -MP -MF $1.d -MJ $1.json $(2) # -MT $(subst /,_,$1)
+ifdef MSYS
+# Записываем имя зависимости в формате unix, иначе make не сможет её сопоставить
+sp_compile_dep = -MMD -MP -MF $1.d -MJ $1.json $(2) -MT$(shell cygpath -u $(abspath $(1)))
+else
+sp_compile_dep = -MMD -MP -MF $1.d -MJ $1.json $(2)
+endif
 else
 sp_compile_dep = -MMD -MP -MF $1.d $(2) # -MT $(subst /,_,$1)
 endif
 sp_make_dep = #$(subst /,_,$1)
 
 sp_compile_gch = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
-	$(OSTYPE_GCH_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $@ $(call sp_convert_path,$<)
+	$(OSTYPE_GCH_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
 
 sp_compile_c = $(GLOBAL_QUIET_CC) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CC) \
-	$(OSTYPE_C_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $@ $(call sp_convert_path,$<)
+	$(OSTYPE_C_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
 
 sp_compile_cpp = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
-	$(OSTYPE_CPP_FILE) $(call sp_compile_dep, $@, $(1))  -c -o $@ $(call sp_convert_path,$<)
+	$(OSTYPE_CPP_FILE) $(call sp_compile_dep, $@, $(1))  -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
 
 sp_compile_mm = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
-	$(OSTYPE_MM_FILE) $(call sp_compile_dep, $@, $(1)) -fobjc-arc -c -o $@ $(call sp_convert_path,$<)
+	$(OSTYPE_MM_FILE) $(call sp_compile_dep, $@, $(1)) -fobjc-arc -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
 
 sp_copy_header = @@$(GLOBAL_MKDIR) $(dir $@); cp -f $< $@
 

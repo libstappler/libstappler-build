@@ -42,6 +42,7 @@ TOOLKIT_CXXFLAGS := $(GLOBAL_CXXFLAGS) $(TOOLKIT_FLAGS) $(TOOLKIT_INPUT_CFLAGS)
 TOOLKIT_CFLAGS := $(GLOBAL_CFLAGS) $(TOOLKIT_FLAGS) $(TOOLKIT_INPUT_CFLAGS)
 
 TOOLKIT_MODULES := $(BUILD_OUTDIR)/modules.info
+TOOLKIT_CACHED_MODULES := $(shell cat $(TOOLKIT_MODULES))
 
 COUNTER_WORDS := $(words $(TOOLKIT_GCH) $(TOOLKIT_OBJS))
 COUNTER_NAME := toolkit
@@ -50,17 +51,10 @@ include $(BUILD_ROOT)/utils/counter.mk
 
 $(foreach obj,$(TOOLKIT_GCH) $(TOOLKIT_OBJS),$(eval $(call counter_template,$(obj))))
 
-$(shell \
-	$(GLOBAL_MKDIR) $(BUILD_OUTDIR); \
-	echo 'modules: $(LOCAL_MODULES)' > $(TOOLKIT_MODULES).tmp; \
-	if cmp -s "$(TOOLKIT_MODULES).tmp" "$(TOOLKIT_MODULES)" ; then \
-		$(GLOBAL_RM) $(TOOLKIT_MODULES).tmp; \
-	else \
-		$(GLOBAL_RM) $(TOOLKIT_MODULES); \
-		mv $(TOOLKIT_MODULES).tmp $(TOOLKIT_MODULES); \
-		touch $(TOOLKIT_MODULES); \
-	fi \
-)
+ifneq ($(LOCAL_MODULES),$(TOOLKIT_CACHED_MODULES))
+$(info Modules was updated)
+$(shell $(GLOBAL_MKDIR) $(BUILD_OUTDIR); echo '$(LOCAL_MODULES)' > $(TOOLKIT_MODULES))
+endif
 
 # include dependencies
 -include $(patsubst %.o,%.o.d,$(TOOLKIT_OBJS))

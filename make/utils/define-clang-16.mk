@@ -18,23 +18,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# VULKAN_SDK_PREFIX ?= ~/VulkanSDK/<version>/<OS>
-# GLSL -> SpirV compiler (default - glslangValidator from https://github.com/KhronosGroup/glslang/releases/tag/master-tot)
-ifdef VULKAN_SDK_PREFIX
-GLSLC ?= $(call sp_os_path,$(VULKAN_SDK_PREFIX)/bin/glslangValidator)
-SPIRV_LINK ?= $(call sp_os_path,$(VULKAN_SDK_PREFIX)/bin/spirv-link)
+CLANG_VERSION := $(shell echo `clang --version | grep -Eo '[0-9]+\.[0-9]+' | head -1`)
+CLANG_REQUIRED := 16.0
+
+ifeq ($(CLANG_REQUIRED),$(firstword $(sort $(CLANG_VERSION) $(CLANG_REQUIRED))))
+CLANG_CC := clang
+CLANG_CXX := clang++
 else
-GLSLC ?= glslangValidator
-SPIRV_LINK ?= spirv-link
+$(info Default clang below 16.0, C++ compiler set to clang-16)
+CLANG_CC := clang-16
+CLANG_CXX := clang++-16
 endif
 
-BUILD_SHADERS_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(GLSLC))/$(BUILD_TYPE)
+ifndef GLOBAL_CPP
+GLOBAL_CPP := $(CLANG_CXX)
+GLOBAL_CC := $(CLANG_CC)
+CLANG := 1
+endif
 
-sp_compile_glsl = $(GLOBAL_QUIET_GLSLC) $(GLOBAL_MKDIR) $(dir $@); $(GLSLC) \
-	$(BUILD_SHADERS_INCLUDE) -DSP_GLSL=1 -V -o $@ $^ -e $(notdir $(basename $*)) --sep main
-
-sp_link_spirv = $(GLOBAL_QUIET_SPIRV_LINK) $(GLOBAL_MKDIR) $(dir $@); $(SPIRV_LINK) \
-	-o $@ $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(wildcard $(subst $(BUILD_SHADERS_OUTDIR)/linked,,$@)/*))
-
-sp_embed_spirv = $(GLOBAL_QUIET_SPIRV_EMBED) $(GLOBAL_MKDIR) $(dir $@); \
-	cd $(dir $^); xxd -i $(notdir $^) $(abspath $@)
+ifndef GLOBAL_CC
+GLOBAL_CPP := $(CLANG_CXX)
+GLOBAL_CC := $(CLANG_CC)
+CLANG := 1
+endif

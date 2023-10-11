@@ -104,17 +104,17 @@ clean:
 
 .PHONY: all report install clean
 
-ifeq ($(UNAME),Msys)
+#ifeq ($(UNAME),Msys)
+#
+#define LOCAL_make_dep_rule
+#$(1): $(call sp_make_dep,$(1))
+#endef
 
-define LOCAL_make_dep_rule
-$(1): $(call sp_make_dep,$(1))
-endef
+#$(foreach target,$(BUILD_LOCAL_OBJS),$(eval $(call LOCAL_make_dep_rule,$(target))))
 
-$(foreach target,$(BUILD_LOCAL_OBJS),$(eval $(call LOCAL_make_dep_rule,$(target))))
+#.INTERMEDIATE: $(subst /,_,$(BUILD_LOCAL_OBJS))
 
-.INTERMEDIATE: $(subst /,_,$(BUILD_LOCAL_OBJS))
+#$(subst /,_,$(BUILD_LOCAL_OBJS)):
+#	@touch $@
 
-$(subst /,_,$(BUILD_LOCAL_OBJS)):
-	@touch $@
-
-endif
+#endif

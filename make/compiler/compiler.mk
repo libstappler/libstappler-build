@@ -34,24 +34,23 @@ endif
 # Выбираем компиляторы, предпочитаем gcc/g++ если не заданы
 # Устанавливаем флаг, если компилируем с clang
 
+
+ifdef XWIN
+# Для XWIN нужен clang не менее 16.0, другие компиляторы не поддерживаются
+include $(BUILD_ROOT)/utils/define-clang-16.mk
+endif
+
+ifeq ($(UNAME),Msys)
+# Для XWIN нужен clang не менее 16.0, другие компиляторы не поддерживаются
+include $(BUILD_ROOT)/utils/define-clang-16.mk
+endif
+
 ifndef GLOBAL_CPP
-	ifdef XWIN
-		# XWIN может использовать только clang версии 16+ для компиляции
-		CLANG_VERSION_GE_16 := $(shell echo `clang --version | grep -Eo '[0-9]+\.[0-9]+' | head -1` \>= 16.0 | bc)
-		ifeq ($(CLANG_VERSION_GE_16),1)
-			GLOBAL_CPP := clang++
-		else
-$(info Default clang below 16.0, C++ compiler set to clang++-16)
-			GLOBAL_CPP := clang++-16
-		endif
-		CLANG := 1
+	ifdef MINGW
+		GLOBAL_CPP := $(MINGW)-g++
 	else
-		ifdef MINGW
-			GLOBAL_CPP := $(MINGW)-g++
-		else
-			GLOBAL_CPP := g++
-		endif # ifdef MINGW
-	endif
+		GLOBAL_CPP := g++
+	endif # ifdef MINGW
 else
 	ifneq (,$(findstring clang,$(GLOBAL_CPP)))
 		CLANG := 1
@@ -59,23 +58,11 @@ else
 endif # ifndef GLOBAL_CPP
 
 ifndef GLOBAL_CC
-	ifdef XWIN
-		# XWIN может использовать только clang версии 16+ для компиляции
-		CLANG_VERSION_GE_16 := $(shell echo `clang --version | grep -Eo '[0-9]+\.[0-9]+' | head -1` \>= 16.0 | bc)
-		ifeq ($(CLANG_VERSION_GE_16),1)
-			GLOBAL_CC := clang
-		else
-$(info Default clang below 16.0, C compiler set to clang-16)
-			GLOBAL_CC := clang-16
-		endif
-		CLANG := 1
+	ifdef MINGW
+		GLOBAL_CC := $(MINGW)-gcc
 	else
-		ifdef MINGW
-			GLOBAL_CC := $(MINGW)-gcc
-		else
-			GLOBAL_CC := gcc
-		endif # ifdef MINGW
-	endif
+		GLOBAL_CC := gcc
+	endif # ifdef MINGW
 else
 	ifneq (,$(findstring clang,$(GLOBAL_CC)))
 		CLANG := 1
@@ -99,6 +86,8 @@ else ifeq ($(STAPPLER_TARGET),xwin)
 	include $(BUILD_ROOT)/os/xwin.mk
 else ifeq ($(UNAME),Darwin)
 	include $(BUILD_ROOT)/os/darwin.mk
+else ifeq ($(UNAME),Msys)
+	include $(BUILD_ROOT)/os/msys.mk
 else
 	include $(BUILD_ROOT)/os/linux.mk
 endif

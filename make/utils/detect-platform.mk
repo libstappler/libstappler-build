@@ -18,23 +18,42 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# VULKAN_SDK_PREFIX ?= ~/VulkanSDK/<version>/<OS>
-# GLSL -> SpirV compiler (default - glslangValidator from https://github.com/KhronosGroup/glslang/releases/tag/master-tot)
-ifdef VULKAN_SDK_PREFIX
-GLSLC ?= $(call sp_os_path,$(VULKAN_SDK_PREFIX)/bin/glslangValidator)
-SPIRV_LINK ?= $(call sp_os_path,$(VULKAN_SDK_PREFIX)/bin/spirv-link)
-else
-GLSLC ?= glslangValidator
-SPIRV_LINK ?= spirv-link
+# Только определяем платформу, не трогаем другие функции сборки
+
+STAPPLER_PLATFORM :=
+
+UNAME := $(shell uname)
+
+ifneq ($(UNAME),Darwin)
+	UNAME := $(shell uname -o)
 endif
 
-BUILD_SHADERS_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(GLSLC))/$(BUILD_TYPE)
+ifeq ($(findstring MSYS_NT,$(UNAME)),MSYS_NT)
+	UNAME := $(shell uname -o)
+endif
 
-sp_compile_glsl = $(GLOBAL_QUIET_GLSLC) $(GLOBAL_MKDIR) $(dir $@); $(GLSLC) \
-	$(BUILD_SHADERS_INCLUDE) -DSP_GLSL=1 -V -o $@ $^ -e $(notdir $(basename $*)) --sep main
+ifeq ($(STAPPLER_TARGET),android)
+ANDROID := 1
+STAPPLER_PLATFORM += ANDROID=1
+else ifeq ($(STAPPLER_TARGET),xwin)
+XWIN := 1
+WIN32 := 1
+STAPPLER_PLATFORM += XWIN=1 WIN32=1
+else ifeq ($(UNAME),Darwin)
+MACOS := 1
+STAPPLER_PLATFORM += MACOS=1
+else ifeq ($(UNAME),Msys)
+MSYS := 1
+WIN32 := 1
+STAPPLER_PLATFORM += MSYS=1 WIN32=1
+else
+LINUX := 1
+STAPPLER_PLATFORM += LINUX=1
+endif
 
-sp_link_spirv = $(GLOBAL_QUIET_SPIRV_LINK) $(GLOBAL_MKDIR) $(dir $@); $(SPIRV_LINK) \
-	-o $@ $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(wildcard $(subst $(BUILD_SHADERS_OUTDIR)/linked,,$@)/*))
-
-sp_embed_spirv = $(GLOBAL_QUIET_SPIRV_EMBED) $(GLOBAL_MKDIR) $(dir $@); \
-	cd $(dir $^); xxd -i $(notdir $^) $(abspath $@)
+sp_detect_platform = \
+	STAPPLER_TARGET=$(1) \
+	$(if $(filter host,$(1)),$(STAPPLER_PLATFORM)) \
+	$(if $(filter android,$(1)),ANDROID=1) \
+	$(if $(filter ios,$(1)),IOS=1) \
+	$(if $(filter xwin,$(1)),XWIN=1 WIN32=1)

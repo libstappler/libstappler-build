@@ -28,102 +28,104 @@ ifndef STAPPLER_TARGET
 
 .DEFAULT_GOAL := host
 
+include $(BUILD_ROOT)/utils/detect-platform.mk
+
 host: host-debug
 clean: host-debug-clean
 install: host-install
 
 host-install:
-	@$(MAKE) STAPPLER_TARGET=host install
+	@$(MAKE) $(call sp_detect_platform,host) install
 
 host-debug:
-	@$(MAKE) STAPPLER_TARGET=host all
+	@$(MAKE) $(call sp_detect_platform,host) all
 
 host-debug-clean:
-	@$(MAKE) STAPPLER_TARGET=host clean
+	@$(MAKE) $(call sp_detect_platform,host) clean
 
 host-release:
-	@$(MAKE) STAPPLER_TARGET=host RELEASE=1
+	@$(MAKE) $(call sp_detect_platform,host) RELEASE=1
 
 host-release-clean:
-	@$(MAKE) STAPPLER_TARGET=host RELEASE=1 clean
+	@$(MAKE) $(call sp_detect_platform,host) RELEASE=1 clean
 
 host-coverage:
-	@$(MAKE) STAPPLER_TARGET=host COVERAGE=1 all
+	@$(MAKE) $(call sp_detect_platform,host) COVERAGE=1 all
 
 host-coverage-clean:
-	@$(MAKE) STAPPLER_TARGET=host COVERAGE=1 clean
+	@$(MAKE) $(call sp_detect_platform,host) COVERAGE=1 clean
 
 host-report:
-	@$(MAKE) STAPPLER_TARGET=host COVERAGE=1 report
+	@$(MAKE) $(call sp_detect_platform,host) COVERAGE=1 report
 
 android: android-debug
 android-clean: android-debug-clean
 
 android-export:
-	@$(MAKE) ANDROID_EXPORT=1 STAPPLER_TARGET=android android-export
+	@$(MAKE) ANDROID_EXPORT=1 $(call sp_detect_platform,android) android-export
 
 android-debug:
-	@$(MAKE) ANDROID_EXPORT=1 STAPPLER_TARGET=android android-export
-	@$(MAKE) STAPPLER_TARGET=android all
+	@$(MAKE) ANDROID_EXPORT=1 $(call sp_detect_platform,android) android-export
+	@$(MAKE) $(call sp_detect_platform,android) all
 
 android-debug-clean:
-	@$(MAKE) STAPPLER_TARGET=android clean
+	@$(MAKE) $(call sp_detect_platform,android) clean
 
 android-release:
-	@$(MAKE) ANDROID_EXPORT=1 STAPPLER_TARGET=android android-export
-	@$(MAKE) STAPPLER_TARGET=android RELEASE=1 all
+	@$(MAKE) ANDROID_EXPORT=1 $(call sp_detect_platform,android) android-export
+	@$(MAKE) $(call sp_detect_platform,android) RELEASE=1 all
 
 android-release-clean:
-	@$(MAKE) STAPPLER_TARGET=android RELEASE=1 clean
+	@$(MAKE) $(call sp_detect_platform,android) RELEASE=1 clean
 
 ios: ios-debug
 ios-clean: ios-debug-clean
 
 ios-export:
-	@$(MAKE) STAPPLER_TARGET=ios IOS_ARCH=export ios-export
+	@$(MAKE) $(call sp_detect_platform,ios) IOS_ARCH=export ios-export
 
 ios-debug:
-	@$(MAKE) STAPPLER_TARGET=ios ios
+	@$(MAKE) $(call sp_detect_platform,ios) ios
 
 ios-debug-clean:
-	@$(MAKE) STAPPLER_TARGET=ios ios-clean
+	@$(MAKE) $(call sp_detect_platform,ios) ios-clean
 
 ios-release:
-	@$(MAKE) STAPPLER_TARGET=ios RELEASE=1 ios
+	@$(MAKE) $(call sp_detect_platform,ios) RELEASE=1 ios
 
 ios-release-clean:
-	@$(MAKE) STAPPLER_TARGET=ios RELEASE=1 ios-clean
+	@$(MAKE) $(call sp_detect_platform,ios) RELEASE=1 ios-clean
 
 ios-all:
-	@$(MAKE) STAPPLER_TARGET=ios ios
-	@$(MAKE) STAPPLER_TARGET=ios RELEASE=1 ios
+	@$(MAKE) $(call sp_detect_platform,ios) ios
+	@$(MAKE) $(call sp_detect_platform,ios) RELEASE=1 ios
 
 ios-all-clean:
-	@$(MAKE) STAPPLER_TARGET=ios ios-clean
-	@$(MAKE) STAPPLER_TARGET=ios RELEASE=1 ios-clean
+	@$(MAKE) $(call sp_detect_platform,ios) ios-clean
+	@$(MAKE) $(call sp_detect_platform,ios) RELEASE=1 ios-clean
 
 xwin: xwin-debug
 xwin-clean: xwin-debug-clean
 
 xwin-debug:
-	@$(MAKE) STAPPLER_TARGET=xwin all
+	@$(MAKE) $(call sp_detect_platform,xwin) all
 
 xwin-debug-clean:
-	@$(MAKE) STAPPLER_TARGET=xwin clean
+	@$(MAKE) $(call sp_detect_platform,xwin) clean
 
 xwin-release:
-	@$(MAKE) STAPPLER_TARGET=xwin RELEASE=1 all
+	@$(MAKE) $(call sp_detect_platform,xwin) RELEASE=1 all
 
 xwin-release-clean:
-	@$(MAKE) STAPPLER_TARGET=xwin RELEASE=1 clean
+	@$(MAKE) $(call sp_detect_platform,xwin) RELEASE=1 clean
 
 xwin-all:
-	@$(MAKE) STAPPLER_TARGET=xwin xwin
-	@$(MAKE) STAPPLER_TARGET=xwin RELEASE=1 xwin
+	@$(MAKE) $(call sp_detect_platform,xwin) xwin
+	@$(MAKE) $(call sp_detect_platform,xwin) RELEASE=1 xwin
 
 xwin-all-clean:
-	@$(MAKE) STAPPLER_TARGET=xwin xwin-clean
-	@$(MAKE) STAPPLER_TARGET=xwin RELEASE=1 xwin-clean
+	@$(MAKE) $(call sp_detect_platform,xwin) xwin-clean
+	@$(MAKE) $(call sp_detect_platform,xwin) RELEASE=1 xwin-clean
 
 .PHONY: clean install
 .PHONY: host host-clean host-debug host-debug-clean host-release host-release-clean host-install host-coverage host-report
