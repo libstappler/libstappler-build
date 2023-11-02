@@ -53,7 +53,7 @@ ifdef LOCAL_FORCE_INSTALL
 all: install
 endif
 
-$(BUILD_EXECUTABLE) : $(BUILD_OBJS) $(BUILD_MAIN_OBJ)
+$(BUILD_EXECUTABLE) : $(BUILD_OBJS) $(BUILD_MAIN_OBJ) $(BUILD_SHADERS_EMBEDDED)
 	$(GLOBAL_QUIET_LINK) $(GLOBAL_CPP) $(BUILD_OBJS) $(BUILD_MAIN_OBJ) $(BUILD_LIBS) $(OSTYPE_EXEC_FLAGS) -o $(BUILD_EXECUTABLE)
 
 ifdef MACOS_ARCH
@@ -73,10 +73,10 @@ all: mac-export
 install: mac-export
 endif
 
-$(BUILD_SHARED_LIBRARY): $(BUILD_OBJS)
+$(BUILD_SHARED_LIBRARY): $(BUILD_OBJS) $(BUILD_SHADERS_EMBEDDED)
 	$(GLOBAL_QUIET_LINK) $(GLOBAL_CPP) -shared  $(BUILD_OBJS) $(BUILD_LIBS) $(BUILD_LIB_FLAGS) $(OSTYPE_EXEC_FLAGS) -o $(BUILD_SHARED_LIBRARY)
 
-$(BUILD_STATIC_LIBRARY): $(BUILD_OBJS)
+$(BUILD_STATIC_LIBRARY): $(BUILD_OBJS) $(BUILD_SHADERS_EMBEDDED)
 	$(GLOBAL_QUIET_LINK) $(GLOBAL_AR) $(BUILD_STATIC_LIBRARY) $(BUILD_OBJS)
 
 $(BUILD_INSTALL_SHARED_LIBRARY): $(BUILD_SHARED_LIBRARY)
@@ -92,10 +92,12 @@ report: $(BUILD_OBJS) $(BUILD_EXECUTABLE)
 	$(GLOBAL_MKDIR) $(BUILD_OUTDIR)/gcov
 	lcov --capture --directory . --output-file $(BUILD_OUTDIR)/gcov/coverage.info \
 		--exclude '/usr/include/*' --exclude '/usr/lib/*' \
-		--exclude $(realpath $(STAPPLER_ROOT))/'libs/*' \
+		--exclude $(realpath $(STAPPLER_ROOT))/'build/*' \
+		--exclude $(realpath $(STAPPLER_ROOT))/'deps/*' \
 		--exclude $(realpath $(STAPPLER_ROOT))/'tests/*' \
-		--exclude $(realpath $(STAPPLER_ROOT))/'thirdparty/*'
-	genhtml $(BUILD_OUTDIR)/gcov/coverage.info --output-directory $(BUILD_OUTDIR)/html
+		--exclude $(realpath $(STAPPLER_ROOT))/core/'thirdparty/*' \
+		--exclude $(realpath $(STAPPLER_ROOT))/xenolith/'thirdparty/*'
+	genhtml $(BUILD_OUTDIR)/gcov/coverage.info --demangle-cpp --output-directory $(BUILD_OUTDIR)/html
 
 install: $(BUILD_INSTALL_SHARED_LIBRARY) $(BUILD_INSTALL_EXECUTABLE) $(BUILD_INSTALL_STATIC_LIBRARY)
 
