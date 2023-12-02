@@ -45,11 +45,11 @@ sp_counter_text =
 endif
 
 ifdef verbose
-ifneq ($(verbose),yes)
+ifneq ($(verbose),1)
 GLOBAL_QUIET_CC = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CC))] $@ ;
 GLOBAL_QUIET_CPP = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CPP))] $@ ;
 GLOBAL_QUIET_LINK = @ echo [Link] $@ ;
-GLOBAL_QUIET_GLSLC = @ echo [$(notdir $(GLSLC))] $(notdir $@) ;
+GLOBAL_QUIET_GLSLC = @ echo [$(notdir $(GLSLC))] $(notdir $(abspath $(dir $*)))/$(notdir $@) ;
 GLOBAL_QUIET_SPIRV_LINK = @ echo [$(notdir $(SPIRV_LINK))] $(notdir $@) ;
 GLOBAL_QUIET_SPIRV_EMBED = @ echo [embed] $(notdir $@) ;
 endif
@@ -57,7 +57,7 @@ else
 GLOBAL_QUIET_CC = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CC))] $(notdir $@) ;
 GLOBAL_QUIET_CPP = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CPP))] $(notdir $@) ;
 GLOBAL_QUIET_LINK = @ echo [Link] $@ ;
-GLOBAL_QUIET_GLSLC = @ echo [$(notdir $(GLSLC))] $(notdir $@) ;
+GLOBAL_QUIET_GLSLC = @ echo [$(notdir $(GLSLC))] $(notdir $(abspath $(dir $*)))/$(notdir $@) ;
 GLOBAL_QUIET_SPIRV_LINK = @ echo [$(notdir $(SPIRV_LINK))] $(notdir $@) ;
 GLOBAL_QUIET_SPIRV_EMBED = @ echo [embed] $(notdir $@) ;
 endif

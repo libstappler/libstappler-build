@@ -31,10 +31,10 @@ endif
 BUILD_SHADERS_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(GLSLC))/$(BUILD_TYPE)
 
 sp_compile_glsl = $(GLOBAL_QUIET_GLSLC) $(GLOBAL_MKDIR) $(dir $@); $(GLSLC) \
-	$(BUILD_SHADERS_INCLUDE) -DSP_GLSL=1 -V -o $@ $^ -e $(notdir $(basename $*)) --sep main
+	$(BUILD_SHADERS_INCLUDE) -DSP_GLSL=1 $(1) -V -o $@ $^ -e $(notdir $(basename $*)) --sep main
 
 sp_link_spirv = $(GLOBAL_QUIET_SPIRV_LINK) $(GLOBAL_MKDIR) $(dir $@); $(SPIRV_LINK) \
 	-o $@ $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(wildcard $(subst $(BUILD_SHADERS_OUTDIR)/linked,,$@)/*))
 
 sp_embed_spirv = $(GLOBAL_QUIET_SPIRV_EMBED) $(GLOBAL_MKDIR) $(dir $@); \
-	cd $(dir $^); xxd -i $(notdir $^) $(abspath $@)
+	cd $(dir $^); xxd -i $(notdir $<) $(abspath $@)

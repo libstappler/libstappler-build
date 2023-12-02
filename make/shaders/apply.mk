@@ -18,20 +18,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-BUILD_SHADERS_SRCS := $(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*/*)))
-BUILD_SHADERS_COMPILED := $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(BUILD_SHADERS_SRCS))
-BUILD_SHADERS_LINKED := $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*))))
-BUILD_SHADERS_EMBEDDED := $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*))))
+BUILD_SHADERS_SRCS_DIRS_TARGETS := $(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*/*)))
+BUILD_SHADERS_SRCS_EXCLUDE := $(sort $(realpath $(dir $(BUILD_SHADERS_SRCS_DIRS_TARGETS))))
+BUILD_SHADERS_SRCS_FILES_TARGETS := $(filter-out $(BUILD_SHADERS_SRCS_EXCLUDE),$(realpath $(foreach dir,$(LOCAL_SHADERS_DIR),$(wildcard $(dir)/*.*))))
+BUILD_SHADERS_COMPILED := $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(BUILD_SHADERS_SRCS_DIRS_TARGETS) $(BUILD_SHADERS_SRCS_FILES_TARGETS))
+BUILD_SHADERS_LINKED := $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(BUILD_SHADERS_SRCS_EXCLUDE))
+BUILD_SHADERS_EMBEDDED := $(addsuffix .h,\
+	$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(BUILD_SHADERS_SRCS_EXCLUDE))\
+	$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded_files,$(BUILD_SHADERS_SRCS_FILES_TARGETS)))
+
 BUILD_SHADERS_TARGET_INCLUDE_DIR := $(abspath $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(LOCAL_SHADERS_DIR))))
-BUILD_SHADERS_TARGET_INCLUDE := $(addprefix -I,$(BUILD_SHADERS_TARGET_INCLUDE_DIR))
+BUILD_SHADERS_TARGET_INCLUDE_FILES := $(abspath $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded_files,$(realpath $(LOCAL_SHADERS_DIR))))
+BUILD_SHADERS_TARGET_INCLUDE := $(addprefix -I,$(BUILD_SHADERS_TARGET_INCLUDE_DIR) $(BUILD_SHADERS_TARGET_INCLUDE_FILES))
 
 BUILD_SHADERS_INCLUDE = $(addprefix -I,$(realpath $(LOCAL_SHADERS_INCLUDE) $(TOOLKIT_SHADERS_INCLUDE)))
 
 $(BUILD_SHADERS_OUTDIR)/compiled/% : /%
-	$(call sp_compile_glsl)
+	$(call sp_compile_glsl,$(LOCAL_SHADERS_RULES))
 
 $(BUILD_SHADERS_OUTDIR)/linked/% : $(BUILD_SHADERS_COMPILED) $(TOOLKIT_SHADERS_COMPILED)
 	$(call sp_link_spirv)
 
-$(BUILD_SHADERS_OUTDIR)/embedded/% : $(BUILD_SHADERS_OUTDIR)/linked/%
+$(BUILD_SHADERS_OUTDIR)/embedded/%.h : $(BUILD_SHADERS_OUTDIR)/linked/% $(BUILD_SHADERS_LINKED)
 	$(call sp_embed_spirv)
+
+$(BUILD_SHADERS_OUTDIR)/embedded_files/%.h : $(BUILD_SHADERS_OUTDIR)/compiled/% $(BUILD_SHADERS_COMPILED)
+	$(call sp_embed_spirv)
+	

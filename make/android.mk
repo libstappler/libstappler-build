@@ -36,7 +36,7 @@ include $(BUILD_ROOT)/compiler/compiler.mk
 
 BUILD_LIBRARY := $(BUILD_OUTDIR)/$(LOCAL_LIBRARY).so
 BUILD_STATIC := $(BUILD_OUTDIR)/$(LOCAL_LIBRARY).a
-LOCAL_SRCS_OBJS += $(realpath $(NDK)/sources/android/cpufeatures/cpu-features.c)
+LOCAL_SRCS_OBJS +=
 
 include $(BUILD_ROOT)/compiler/apply.mk
 
