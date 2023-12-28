@@ -48,7 +48,7 @@ $(ANDROID_EXPORT_PATH)/Android.mk.tmp:
 	@echo 'include $$(CLEAR_VARS)' >> $@
 	@echo 'LOCAL_MODULE := stappler_application_generic' >> $@
 	@echo 'LOCAL_CFLAGS := -DANDROID -DUSE_FILE32API -DSTAPPLER $(TOOLKIT_MODULE_FLAGS)' >> $@
-	@echo 'LOCAL_EXPORT_LDLIBS := -lvulkan -llog -lz -landroid' >> $@
+	@echo 'LOCAL_EXPORT_LDLIBS := -llog -lz -landroid' >> $@
 	@echo -n 'LOCAL_SRC_FILES :=' >> $@
 	@for file in $(realpath $(BUILD_SRCS)) $(TOOLKIT_SRCS); do \
 		printf " \\\\\n\t$$file" >> $@; \
