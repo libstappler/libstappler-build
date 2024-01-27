@@ -57,18 +57,18 @@ sp_copy_header = @@$(GLOBAL_MKDIR) $(dir $@); cp -f $< $@
 
 $(call sp_toolkit_source_list, $($(TOOLKIT_NAME)_SRCS_DIRS), $($(TOOLKIT_NAME)_SRCS_OBJS))
 
-sp_toolkit_source_list = $(foreach f,$(realpath\
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) \( -name "*.c" -or -name "*.cpp" \))) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) \( -name "*.c" -or -name "*.cpp" \))) \
-	$(filter /%,$(filter-out %.mm,$(2))) \
-	$(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter-out %.mm,$(2)))) \
+sp_toolkit_source_list = $(foreach f,\
+	$(realpath $(foreach dir,$(filter /%,$(1)),$(shell find $(dir) \( -name "*.c" -or -name "*.cpp" \)))) \
+	$(realpath $(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) \( -name "*.c" -or -name "*.cpp" \)))) \
+	$(abspath $(filter /%,$(filter-out %.mm,$(2)))) \
+	$(abspath $(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter-out %.mm,$(2))))) \
 	$(if $(BUILD_OBJC), \
-		$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.mm')) \
-		$(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) -name '*.mm')) \
-		$(filter /%,$(filter %.mm,$(2))) \
-		$(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter %.mm,$(2))))\
+		$(realpath $(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.mm'))) \
+		$(realpath $(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) -name '*.mm'))) \
+		$(abspath $(filter /%,$(filter %.mm,$(2)))) \
+		$(abspath $(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter %.mm,$(2))))) \
 	)\
-),$(call sp_unconvert_path,$(f)))
+,$(call sp_unconvert_path,$(f)))
 
 sp_toolkit_source_list_abs = $(foreach f,$(abspath\
 	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) \( -name "*.c" -or -name "*.cpp" \))) \

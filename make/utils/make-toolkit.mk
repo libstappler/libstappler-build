@@ -100,15 +100,15 @@ $(foreach target,$(TOOLKIT_PRECOMPILED_HEADERS),$(eval $(call TOOLKIT_include_ru
 $(foreach target,$(TOOLKIT_GCH),$(eval $(call TOOLKIT_gch_rule,$(target),$(TOOLKIT_CXXFLAGS))))
 
 $(foreach target,\
-	$(filter %.c,$(TOOLKIT_SRCS)),\
+	$(sort $(filter %.c,$(TOOLKIT_SRCS))),\
 	$(eval $(call TOOLKIT_c_rule,$(target),$(BUILD_OUTDIR),$(TOOLKIT_CFLAGS))))
 
 $(foreach target,\
-	$(filter %.cpp,$(TOOLKIT_SRCS)),\
+	$(sort $(filter %.cpp,$(TOOLKIT_SRCS))),\
 	$(eval $(call TOOLKIT_cpp_rule,$(target),$(BUILD_OUTDIR),$(TOOLKIT_CXXFLAGS))))
 
 $(foreach target,\
-	$(filter %.mm,$(TOOLKIT_SRCS)),\
+	$(sort $(filter %.mm,$(TOOLKIT_SRCS))),\
 	$(eval $(call TOOLKIT_mm_rule,$(target),$(BUILD_OUTDIR),$(TOOLKIT_CXXFLAGS))))
 
 ifeq ($(UNAME),Msys)
