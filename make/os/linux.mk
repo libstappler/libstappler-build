@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,12 @@ OSTYPE_CFLAGS := -DLINUX -Wall -fPIC
 OSTYPE_CPPFLAGS := -Wno-overloaded-virtual -frtti
 
 OSTYPE_EXEC_SUFFIX :=
+OSTYPE_DSO_SUFFIX := .so
+OSTYPE_LIB_SUFFIX := .a
+OSTYPE_LIB_PREFIX := lib
 
 OSTYPE_LDFLAGS := -Wl,-z,defs -rdynamic
+OSTYPE_STANDALONE_LDFLAGS := -rdynamic -Wl,--exclude-libs,ALL
 OSTYPE_EXEC_FLAGS :=
 
 # ldgold only tested for x86_64 linux

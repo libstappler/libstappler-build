@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,12 @@ NDK ?= $(ANDROID_NDK_ROOT)
 
 OSTYPE_PREBUILT_PATH := deps/android/$$(TARGET_ARCH_ABI)/lib
 OSTYPE_INCLUDE :=  deps/android/$$(TARGET_ARCH_ABI)/include
+
 OSTYPE_EXEC_SUFFIX :=
+OSTYPE_DSO_SUFFIX := .so
+OSTYPE_LIB_SUFFIX := .a
+OSTYPE_LIB_PREFIX := lib
+
 RESOLVE_LIBS_REALPATH := 1
 GLOBAL_CC := ndk-build
 GLOBAL_CPP := ndk-build

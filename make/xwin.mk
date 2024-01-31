@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,32 +21,18 @@
 verbose := yes
 
 .DEFAULT_GOAL := all
-IS_LOCAL_BUILD := 1
+
+BUILD_XWIN := 1
 XWIN := 1
 WIN32 := 1
 
 BUILD_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-LOCAL_ROOT ?= .
-
-BUILD_OUTDIR := $(LOCAL_OUTDIR)/xwin
-
-GLOBAL_ROOT := $(STAPPLER_ROOT)
-GLOBAL_OUTPUT := $(BUILD_OUTDIR)
+include $(BUILD_ROOT)/utils/local-defaults.mk
 
 include $(BUILD_ROOT)/compiler/compiler.mk
 
-ifdef LOCAL_LIBRARY
-BUILD_STATIC_LIBRARY := $(BUILD_OUTDIR)/$(LOCAL_LIBRARY).a
-BUILD_INSTALL_STATIC_LIBRARY := $(LOCAL_INSTALL_DIR)/$(LOCAL_LIBRARY).a
-BUILD_SHARED_LIBRARY := $(BUILD_OUTDIR)/$(LOCAL_LIBRARY).so
-BUILD_INSTALL_SHARED_LIBRARY := $(LOCAL_INSTALL_DIR)/$(LOCAL_LIBRARY).so
-endif
-
-ifdef LOCAL_EXECUTABLE
-BUILD_EXECUTABLE := $(BUILD_OUTDIR)/$(LOCAL_EXECUTABLE)$(OSTYPE_EXEC_SUFFIX)
-BUILD_INSTALL_EXECUTABLE := $(LOCAL_INSTALL_DIR)/$(LOCAL_EXECUTABLE)$(OSTYPE_EXEC_SUFFIX)
-endif
+include $(BUILD_ROOT)/utils/build-targets.mk
 
 include $(BUILD_ROOT)/compiler/apply.mk
 
@@ -57,10 +43,10 @@ all: install
 endif
 
 $(BUILD_EXECUTABLE) : $(BUILD_OBJS) $(BUILD_MAIN_OBJ)
-	$(GLOBAL_QUIET_LINK) $(GLOBAL_CPP) $(BUILD_OBJS) $(BUILD_MAIN_OBJ) $(BUILD_LIBS) $(OSTYPE_EXEC_FLAGS) -o $(BUILD_EXECUTABLE)
+	$(GLOBAL_QUIET_LINK) $(GLOBAL_CPP) $(BUILD_OBJS) $(BUILD_MAIN_OBJ) $(BUILD_EXEC_LIBS) -o $(BUILD_EXECUTABLE)
 
 $(BUILD_SHARED_LIBRARY): $(BUILD_OBJS)
-	$(GLOBAL_QUIET_LINK) $(GLOBAL_CPP) -shared  $(BUILD_OBJS) $(BUILD_LIBS) $(BUILD_LIB_FLAGS) $(OSTYPE_EXEC_FLAGS) -o $(BUILD_SHARED_LIBRARY)
+	$(GLOBAL_QUIET_LINK) $(GLOBAL_CPP) -shared  $(BUILD_OBJS) $(BUILD_DSO_LIBS) -o $(BUILD_SHARED_LIBRARY)
 
 $(BUILD_STATIC_LIBRARY): $(BUILD_OBJS)
 	$(GLOBAL_QUIET_LINK) $(GLOBAL_AR) $(BUILD_STATIC_LIBRARY) $(BUILD_OBJS)

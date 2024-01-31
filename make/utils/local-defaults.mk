@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2024 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,42 +18,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-.DEFAULT_GOAL := all
-ANDROID := 1
-BUILD_ANDROID := 1
+LOCAL_ROOT ?= .
+LOCAL_BUILD_SHARED ?= 1
+LOCAL_BUILD_STATIC ?= 1
+LOCAL_ANDROID_TARGET ?= application
+LOCAL_ANDROID_PLATFORM ?= android-24
 
-BUILD_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-
-include $(BUILD_ROOT)/utils/local-defaults.mk
-
-include $(BUILD_ROOT)/compiler/compiler.mk
-
-include $(BUILD_ROOT)/utils/build-targets.mk
-
-include $(BUILD_ROOT)/compiler/apply.mk
-
-BUILD_ANDROID_ARGS := \
-	NDK_PROJECT_PATH=null \
-	APP_BUILD_SCRIPT=$(LOCAL_ANDROID_MK) \
-	NDK_OUT=$(BUILD_OUTDIR)/obj \
-	NDK_LIBS_OUT=$(BUILD_OUTDIR)/libs \
-	NDK_APPLICATION_MK:=$(LOCAL_APPLICATION_MK) \
-	APP_PLATFORM=$(LOCAL_ANDROID_PLATFORM)
-
-ifndef RELEASE
-BUILD_ANDROID_ARGS += NDK_DEBUG=1
+ifdef BUILD_HOST
+LOCAL_INSTALL_DIR ?= $(LOCAL_OUTDIR)/host
+BUILD_OUTDIR := $(LOCAL_OUTDIR)/host
 endif
 
-android-export: $(BUILD_SHADERS_EMBEDDED) $(TOOLKIT_SHADERS_EMBEDDED)
+ifdef BUILD_ANDROID
+LOCAL_INSTALL_DIR ?= $(LOCAL_OUTDIR)/android
+BUILD_OUTDIR := $(LOCAL_OUTDIR)/android
+endif
 
-all:  $(BUILD_SHADERS_EMBEDDED) $(TOOLKIT_SHADERS_EMBEDDED)
-	+$(NDK)/ndk-build $(BUILD_ANDROID_ARGS) $(LOCAL_ANDROID_TARGET) --no-print-directory
+ifdef BUILD_XWIN
+LOCAL_INSTALL_DIR ?= $(LOCAL_OUTDIR)/xwin
+BUILD_OUTDIR := $(LOCAL_OUTDIR)/xwin
+endif
 
-clean_local:
-	$(GLOBAL_RM) $(BUILD_OUTDIR)
-
-clean: clean_local
-.PHONY: clean_local clean .prebuild_local all static
-
-.prebuild_local:
-	@$(GLOBAL_MKDIR) $(BUILD_DIRS)
+GLOBAL_ROOT := $(STAPPLER_ROOT)
+GLOBAL_OUTPUT := $(BUILD_OUTDIR)

@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,12 @@ OSTYPE_CFLAGS := -DMACOS -DUSE_FILE32API -Wall -fPIC -Wno-missing-braces \
 OSTYPE_CPPFLAGS :=  -frtti -Wno-unneeded-internal-declaration
 
 OSTYPE_EXEC_SUFFIX :=
+OSTYPE_DSO_SUFFIX := .lib
+OSTYPE_LIB_SUFFIX := .a
+OSTYPE_LIB_PREFIX := lib
 
 OSTYPE_LDFLAGS := -mmacosx-version-min=$(OS_VERSION_TARGET)
+OSTYPE_STANDALONE_LDFLAGS := $(OSTYPE_LDFLAGS)
 OSTYPE_EXEC_FLAGS := -mmacosx-version-min=$(OS_VERSION_TARGET)
 CLANG := 1
 BUILD_OBJC := 1

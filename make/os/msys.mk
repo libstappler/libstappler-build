@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,9 @@ OSTYPE_CFLAGS :=  -DWIN32 -DMSYS -Wall --target=$(OSTYPE_TARGET) -m64 -msse2 -D_
 OSTYPE_CPPFLAGS := -Wno-overloaded-virtual -frtti
 
 OSTYPE_EXEC_SUFFIX := .exe
+OSTYPE_DSO_SUFFIX := .dll
+OSTYPE_LIB_SUFFIX := .lib
+OSTYPE_LIB_PREFIX :=
 
 ifeq ($(RELEASE),1)
 OSTYPE_CFLAGS +=

@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -100,6 +100,10 @@ else
 	BUILD_TYPE := debug
 	GLOBAL_CFLAGS := -g -DDEBUG -DSTAPPLER_ROOT=$(realpath $(GLOBAL_ROOT))  $(OSTYPE_CFLAGS) $(GLOBAL_CFLAGS)
 endif # ifdef RELEASE
+
+ifdef STAPPLER_VERSION_PREFIX
+GLOBAL_CFLAGS += -DSTAPPLER_VERSION_PREFIX=$(STAPPLER_VERSION_PREFIX)
+endif
 
 GLOBAL_STDXX ?= gnu++2a
 GLOBAL_STD ?= gnu11

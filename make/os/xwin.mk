@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,9 @@ OSTYPE_CFLAGS :=  -DWIN32 -DXWIN -Wall --target=$(OSTYPE_TARGET) -m64 -msse2 -D_
 OSTYPE_CPPFLAGS := -Wno-overloaded-virtual -frtti
 
 OSTYPE_EXEC_SUFFIX := .exe
+OSTYPE_DSO_SUFFIX := .dll
+OSTYPE_LIB_SUFFIX := .lib
+OSTYPE_LIB_PREFIX :=
 
 ifeq ($(RELEASE),1)
 OSTYPE_CFLAGS +=
@@ -65,6 +68,7 @@ OSTYPE_LDFLAGS_BUILDTYPE := -g -Xclang -gcodeview -llibucrtd -llibvcruntimed -ll
 endif
 
 OSTYPE_LDFLAGS :=  --target=$(OSTYPE_TARGET) -fuse-ld=lld -Xlinker -nodefaultlib $(OSTYPE_LDFLAGS_BUILDTYPE) -lkernel32 -lws2_32
+OSTYPE_STANDALONE_LDFLAGS := $(OSTYPE_LDFLAGS)
 OSTYPE_EXEC_FLAGS := --target=$(OSTYPE_TARGET) -fuse-ld=lld -Xlinker -nodefaultlib $(OSTYPE_LDFLAGS_BUILDTYPE) -lkernel32 -lws2_32
 
 XWIN := 1

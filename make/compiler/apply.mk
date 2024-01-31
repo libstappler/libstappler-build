@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -90,14 +90,25 @@ BUILD_GCH += $(TOOLKIT_GCH)
 BUILD_CFLAGS += $(addprefix -I,$(BUILD_INCLUDES))
 BUILD_CXXFLAGS += $(addprefix -I,$(BUILD_INCLUDES))
 
-BUILD_LIBS := $(foreach lib,$(LOCAL_LIBS),-L$(dir $(lib)) -l:$(notdir $(lib))) $(TOOLKIT_LIBS) $(GLOBAL_LDFLAGS) $(LDFLAGS)
+BUILD_LOCAL_LIBS := $(foreach lib,$(LOCAL_LIBS),-L$(dir $(lib)) -l:$(notdir $(lib)))
+BUILD_EXEC_LIBS := $(BUILD_LOCAL_LIBS) $(TOOLKIT_LIBS) $(GLOBAL_LDFLAGS) $(LOCAL_LDFLAGS) $(OSTYPE_EXEC_FLAGS)
+
+ifeq ($(LOCAL_BUILD_SHARED),3)
+BUILD_DSO_LIBS := $(BUILD_LOCAL_LIBS) $(GLOBAL_LDFLAGS) $(LOCAL_LDFLAGS) $(OSTYPE_STANDALONE_LDFLAGS)
+else
+
+ifeq ($(LOCAL_BUILD_SHARED),2)
+BUILD_DSO_LIBS := $(BUILD_LOCAL_LIBS) $(TOOLKIT_LIBS) $(GLOBAL_LDFLAGS) $(LOCAL_LDFLAGS) $(OSTYPE_STANDALONE_LDFLAGS)
+else
+BUILD_DSO_LIBS := $(BUILD_LOCAL_LIBS) $(TOOLKIT_LIBS) $(GLOBAL_LDFLAGS) $(LOCAL_LDFLAGS) $(OSTYPE_LDFLAGS)
+endif
+
+endif
 
 -include $(patsubst %.o,%.o.d,$(BUILD_OBJS) $(BUILD_MAIN_OBJ))
 
 include $(BUILD_ROOT)/shaders/apply.mk
 
-ifdef MSYS
-
 $(BUILD_OUTDIR)/%.o: /%.cpp $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
 	$(call sp_compile_cpp,$(BUILD_CXXFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
 
@@ -106,16 +117,3 @@ $(BUILD_OUTDIR)/%.o: /%.mm $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_
 
 $(BUILD_OUTDIR)/%.o: /%.c $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
 	$(call sp_compile_c,$(BUILD_CFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
-
-else
-
-$(BUILD_OUTDIR)/%.o: /%.cpp $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
-	$(call sp_compile_cpp,$(BUILD_CXXFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
-
-$(BUILD_OUTDIR)/%.o: /%.mm $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
-	$(call sp_compile_mm,$(BUILD_CXXFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
-
-$(BUILD_OUTDIR)/%.o: /%.c $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
-	$(call sp_compile_c,$(BUILD_CFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
-
-endif
