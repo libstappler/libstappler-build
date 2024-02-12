@@ -46,7 +46,7 @@ XWIN_CRT_LIB += \
 	$(XWIN_PATH)/splat/sdk/lib/um/$(OSTYPE_ARCH) \
 	$(XWIN_PATH)/splat/sdk/lib/ucrt/$(OSTYPE_ARCH) \
 	$(XWIN_PATH)/.xwin-cache/unpack/ucrt.msi/lib/ucrt/$(OSTYPE_ARCH_LOCAL) \
-	$(XWIN_PATH)/.xwin-cache/unpack/Microsoft.VC.14.37.17.7.CRT.$(OSTYPE_ARCH_LOCAL).Desktop.base.vsix/lib/$(OSTYPE_ARCH_LOCAL)
+	$(XWIN_PATH)/.xwin-cache/unpack/Microsoft.VC.14.38.17.8.CRT.$(OSTYPE_ARCH_LOCAL).Desktop.base.vsix/lib/$(OSTYPE_ARCH_LOCAL)
 
 OSTYPE_PREBUILT_PATH := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/lib $(XWIN_CRT_LIB)
 OSTYPE_INCLUDE := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/include  $(XWIN_REPLACEMENTS_INCLUDE) $(XWIN_CRT_INCLUDE)

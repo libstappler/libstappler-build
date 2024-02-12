@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-OSTYPE_ARCH ?= x86_64
+OSTYPE_ARCH ?= $(STAPPLER_ARCH)
 OSTYPE_PREBUILT_PATH := deps/linux/$(OSTYPE_ARCH)/lib
 OSTYPE_INCLUDE :=  deps/linux/$(OSTYPE_ARCH)/include
 OSTYPE_CFLAGS := -DLINUX -Wall -fPIC
@@ -32,6 +32,8 @@ OSTYPE_LIB_PREFIX := lib
 OSTYPE_LDFLAGS := -Wl,-z,defs -rdynamic
 OSTYPE_STANDALONE_LDFLAGS := -rdynamic -Wl,--exclude-libs,ALL
 OSTYPE_EXEC_FLAGS :=
+
+$(info Build for $(STAPPLER_ARCH))
 
 # ldgold only tested for x86_64 linux
 # For others - use default ld
@@ -53,6 +55,23 @@ ifeq ($(ASAN),1)
 	OSTYPE_EXEC_FLAGS += -fsanitize=address -static-libasan
 else
 
+endif
+
+ifeq ($(STAPPLER_ARCH),e2k)
+
+# warning about new/delete pairing for exceptions is wrong, since placement new in stappler is noexcept
+OSTYPE_CFLAGS += -w830 -DSP_DEDICATED_SIMD
+OSTYPE_LDFLAGS := -ldl
+OSTYPE_STANDALONE_LDFLAGS := -ldl
+OSTYPE_EXEC_FLAGS := -ldl
+
+ifneq ($(STAPPLER_ARCH),$(UNAME_ARCH))
+
+LCC_ROOT ?= /opt/mcst/lcc-1.26.20.e2k-v4.5.4
+LOCAL_PATH := $(LCC_ROOT)/bin.toolchain:$(PATH)
+export PATH = $(LOCAL_PATH)
+
+endif
 endif
 
 LINUX := 1

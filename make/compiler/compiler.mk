@@ -34,6 +34,7 @@ endif
 # Выбираем компиляторы, предпочитаем gcc/g++ если не заданы
 # Устанавливаем флаг, если компилируем с clang
 
+UNAME_ARCH ?= $(shell uname -m)
 
 ifdef XWIN
 # Для XWIN нужен clang не менее 16.0, другие компиляторы не поддерживаются
@@ -43,6 +44,13 @@ endif
 ifeq ($(UNAME),Msys)
 # Для XWIN нужен clang не менее 16.0, другие компиляторы не поддерживаются
 include $(BUILD_ROOT)/utils/define-clang-16.mk
+endif
+
+ifeq ($(STAPPLER_ARCH),e2k)
+ifneq ($(STAPPLER_ARCH),$(UNAME_ARCH))
+GLOBAL_CPP ?= e2k-linux-l++
+GLOBAL_CC ?= e2k-linux-lcc
+endif
 endif
 
 ifndef GLOBAL_CPP
