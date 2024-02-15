@@ -53,6 +53,13 @@ GLOBAL_CC ?= e2k-linux-lcc
 endif
 endif
 
+ifeq ($(STAPPLER_ARCH),aarch64)
+ifneq ($(STAPPLER_ARCH),$(UNAME_ARCH))
+GLOBAL_CPP := aarch64-linux-gnu-g++
+GLOBAL_CC := aarch64-linux-gnu-gcc
+endif
+endif
+
 ifndef GLOBAL_CPP
 	ifdef MINGW
 		GLOBAL_CPP := $(MINGW)-g++

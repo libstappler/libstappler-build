@@ -31,7 +31,7 @@ OSTYPE_LIB_PREFIX := lib
 
 OSTYPE_LDFLAGS := -Wl,-z,defs -rdynamic
 OSTYPE_STANDALONE_LDFLAGS := -rdynamic -Wl,--exclude-libs,ALL
-OSTYPE_EXEC_FLAGS :=
+OSTYPE_EXEC_FLAGS := 
 
 $(info Build for $(STAPPLER_ARCH))
 
@@ -61,9 +61,9 @@ ifeq ($(STAPPLER_ARCH),e2k)
 
 # warning about new/delete pairing for exceptions is wrong, since placement new in stappler is noexcept
 OSTYPE_CFLAGS += -w830 -DSP_DEDICATED_SIMD
-OSTYPE_LDFLAGS := -ldl
-OSTYPE_STANDALONE_LDFLAGS := -ldl
-OSTYPE_EXEC_FLAGS := -ldl
+OSTYPE_LDFLAGS +=
+OSTYPE_STANDALONE_LDFLAGS +=
+OSTYPE_EXEC_FLAGS +=
 
 ifneq ($(STAPPLER_ARCH),$(UNAME_ARCH))
 
@@ -72,6 +72,13 @@ LOCAL_PATH := $(LCC_ROOT)/bin.toolchain:$(PATH)
 export PATH = $(LOCAL_PATH)
 
 endif
-endif
+endif # ($(STAPPLER_ARCH),e2k)
+
+
+ifeq ($(STAPPLER_ARCH),aarch64)
+
+
+
+endif # ($(STAPPLER_ARCH),aarch64)
 
 LINUX := 1
