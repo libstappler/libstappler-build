@@ -33,15 +33,27 @@ BUILD_SHADERS_TARGET_INCLUDE := $(addprefix -I,$(BUILD_SHADERS_TARGET_INCLUDE_DI
 
 BUILD_SHADERS_INCLUDE = $(addprefix -I,$(realpath $(LOCAL_SHADERS_INCLUDE) $(TOOLKIT_SHADERS_INCLUDE)))
 
-$(BUILD_SHADERS_OUTDIR)/compiled/% : /%
-	$(call sp_compile_glsl,$(LOCAL_SHADERS_RULES))
+define BUILD_SHADERS_compile_rule
+$(1) : $(subst $(BUILD_SHADERS_OUTDIR)/compiled,,$(1))
+	$$(call sp_compile_glsl,$(1),$(subst $(BUILD_SHADERS_OUTDIR)/compiled,,$(1)),$(LOCAL_SHADERS_RULES))
+endef
 
-$(BUILD_SHADERS_OUTDIR)/linked/% : $(BUILD_SHADERS_COMPILED) $(TOOLKIT_SHADERS_COMPILED)
-	$(call sp_link_spirv)
+define BUILD_SHADERS_link_rule
+$(1) : $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(wildcard $(subst $(BUILD_SHADERS_OUTDIR)/linked,,$(1))/*))
+	$$(call sp_link_spirv)
+endef
 
-$(BUILD_SHADERS_OUTDIR)/embedded/%.h : $(BUILD_SHADERS_OUTDIR)/linked/% $(BUILD_SHADERS_LINKED)
-	$(call sp_embed_spirv)
+define BUILD_SHADERS_embed_rule
+$(addsuffix .h,$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(1))) : $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(1))
+	$$(call sp_embed_spirv)
+endef
 
-$(BUILD_SHADERS_OUTDIR)/embedded_files/%.h : $(BUILD_SHADERS_OUTDIR)/compiled/% $(BUILD_SHADERS_COMPILED)
-	$(call sp_embed_spirv)
-	
+define BUILD_SHADERS_embed_single_rule
+$(addsuffix .h,$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded_files,$(1))) : $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(1))
+	$$(call sp_embed_spirv)
+endef
+
+$(foreach COMPILED,$(BUILD_SHADERS_COMPILED) $(TOOLKIT_SHADERS_COMPILED),$(eval $(call BUILD_SHADERS_compile_rule,$(COMPILED))))
+$(foreach LINKED,$(BUILD_SHADERS_LINKED) $(TOOLKIT_SHADERS_LINKED),$(eval $(call BUILD_SHADERS_link_rule,$(LINKED))))
+$(foreach EMBEDDED,$(BUILD_SHADERS_SRCS_EXCLUDE) $(TOOLKIT_SHADERS_SRCS_DIRS_TARGETS),$(eval $(call BUILD_SHADERS_embed_rule,$(EMBEDDED))))
+$(foreach EMBEDDED,$(BUILD_SHADERS_SRCS_FILES_TARGETS),$(eval $(call BUILD_SHADERS_embed_single_rule,$(EMBEDDED))))

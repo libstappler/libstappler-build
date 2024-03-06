@@ -39,7 +39,6 @@ endif
 else
 sp_compile_dep = -MMD -MP -MF $1.d $(2) # -MT $(subst /,_,$1)
 endif
-sp_make_dep = #$(subst /,_,$1)
 
 sp_compile_gch = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
 	$(OSTYPE_GCH_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)

@@ -23,8 +23,15 @@ TOOLKIT_LIBS := $(call sp_toolkit_resolve_libs, $(abspath $(addprefix $(GLOBAL_R
 else
 TOOLKIT_LIBS := $(call sp_toolkit_resolve_libs, $(realpath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH))), $(TOOLKIT_LIBS)) $(LDFLAGS)
 endif
+
+#resolve source paths to files
 TOOLKIT_SRCS := $(call sp_toolkit_source_list, $(TOOLKIT_SRCS_DIRS), $(TOOLKIT_SRCS_OBJS))\
 	$(call sp_toolkit_source_list_abs, $(TOOLKIT_SRCS_DIRS_ABS), $(TOOLKIT_SRCS_OBJS_ABS))
+
+#resolve source paths to files for files, that requires shaders
+TOOLKIT_SRCS_WITH_SHADERS := $(call sp_toolkit_source_list, $(TOOLKIT_SRCS_DIRS_WITH_SHADERS), $(TOOLKIT_SRCS_OBJS_WITH_SHADERS))\
+	$(call sp_toolkit_source_list_abs, $(TOOLKIT_SRCS_DIRS_ABS), $(TOOLKIT_SRCS_OBJS_ABS))
+
 TOOLKIT_INCLUDES := $(call sp_toolkit_include_list, $(TOOLKIT_INCLUDES_DIRS), $(TOOLKIT_INCLUDES_OBJS))
 
 TOOLKIT_PRECOMPILED_HEADERS :=  $(call sp_toolkit_resolve_prefix_files,$(TOOLKIT_PRECOMPILED_HEADERS))
@@ -34,9 +41,11 @@ TOOLKIT_GCH := $(addsuffix .gch,$(TOOLKIT_H_GCH))
 TOOLKIT_OBJS := $(call sp_toolkit_object_list,$(BUILD_OUTDIR),$(TOOLKIT_SRCS))
 
 TOOLKIT_SHADERS_SRCS := $(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*/*)))
+TOOLKIT_SHADERS_SRCS_DIRS_TARGETS := $(sort $(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*))))
+TOOLKIT_SHADERS_SRCS := $(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*/*)))
 TOOLKIT_SHADERS_COMPILED := $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(TOOLKIT_SHADERS_SRCS))
-TOOLKIT_SHADERS_LINKED := $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*))))
-TOOLKIT_SHADERS_EMBEDDED := $(addsuffix .h,$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(foreach dir,$(TOOLKIT_SHADERS_DIR),$(wildcard $(dir)/*)))))
+TOOLKIT_SHADERS_LINKED := $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(TOOLKIT_SHADERS_SRCS_DIRS_TARGETS))
+TOOLKIT_SHADERS_EMBEDDED := $(addsuffix .h,$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(TOOLKIT_SHADERS_SRCS_DIRS_TARGETS)))
 TOOLKIT_SHADERS_TARGET_INCLUDE_DIR := $(abspath $(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(realpath $(TOOLKIT_SHADERS_DIR))))
 TOOLKIT_SHADERS_TARGET_INCLUDE := $(addprefix -I,$(TOOLKIT_SHADERS_TARGET_INCLUDE_DIR))
 
@@ -72,25 +81,31 @@ $(2): $(1) $$(LOCAL_MAKEFILE) $$($TOOLKIT_MODULES)
 endef
 
 define TOOLKIT_gch_rule
-$(1): $(patsubst %.h.gch,%.h,$(1)) $(call sp_make_dep,$(1)) $$(LOCAL_MAKEFILE) $$($TOOLKIT_MODULES)
+$(1): $(patsubst %.h.gch,%.h,$(1)) $$(LOCAL_MAKEFILE) $$($TOOLKIT_MODULES)
 	$$(call sp_compile_gch,$(2))
 endef
 
 define TOOLKIT_c_rule
-$(abspath $(addprefix $(2),$(patsubst %.c,%.o,$(1)))): $(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) $$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED) \
-		$(call sp_make_dep,$(abspath $(addprefix $(2),$(patsubst %.c,%.o,$(1))))) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES)
+$(abspath $(addprefix $(2),$(patsubst %.c,%.o,$(1)))): \
+		$(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) \
+		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
+		$$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES)
 	$$(call sp_compile_c,$(3))
 endef
 
 define TOOLKIT_cpp_rule
-$(abspath $(addprefix $(2),$(patsubst %.cpp,%.o,$(1)))): $(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) $$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED) \
-		$(call sp_make_dep,$(abspath $(addprefix $(2),$(patsubst %.cpp,%.o,$(1))))) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES)
+$(abspath $(addprefix $(2),$(patsubst %.cpp,%.o,$(1)))): \
+		$(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) \
+		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
+		$$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES)
 	$$(call sp_compile_cpp,$(3))
 endef
 
 define TOOLKIT_mm_rule
-$(abspath $(addprefix $(2),$(patsubst %.mm,%.o,$(1)))): $(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) $$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED) \
-		$(call sp_make_dep,$(abspath $(addprefix $(2),$(patsubst %.mm,%.o,$(1))))) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES)
+$(abspath $(addprefix $(2),$(patsubst %.mm,%.o,$(1)))): \
+		$(1) $$(TOOLKIT_H_GCH) $$(TOOLKIT_GCH) \
+		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
+		$$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES)
 	$$(call sp_compile_mm,$(3))
 endef
 
