@@ -19,8 +19,9 @@
 # THE SOFTWARE.
 
 OSTYPE_ARCH ?= $(STAPPLER_ARCH)
-OSTYPE_PREBUILT_PATH := deps/linux/$(OSTYPE_ARCH)/lib
-OSTYPE_INCLUDE :=  deps/linux/$(OSTYPE_ARCH)/include
+OSTYPE_DEPS := deps/linux/$(OSTYPE_ARCH)
+OSTYPE_PREBUILT_PATH := $(OSTYPE_DEPS)/lib
+OSTYPE_INCLUDE := $(OSTYPE_DEPS)/include
 OSTYPE_CFLAGS := -DLINUX -Wall -fPIC
 OSTYPE_CPPFLAGS := -Wno-overloaded-virtual -frtti
 

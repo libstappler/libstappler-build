@@ -24,19 +24,13 @@ BUILD_ANDROID := 1
 
 BUILD_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-include $(BUILD_ROOT)/utils/local-defaults.mk
-
-include $(BUILD_ROOT)/compiler/compiler.mk
-
-include $(BUILD_ROOT)/utils/build-targets.mk
-
-include $(BUILD_ROOT)/compiler/apply.mk
+include $(BUILD_ROOT)/general/compile.mk
 
 BUILD_ANDROID_ARGS := \
 	NDK_PROJECT_PATH=null \
 	APP_BUILD_SCRIPT=$(LOCAL_ANDROID_MK) \
-	NDK_OUT=$(BUILD_OUTDIR)/obj \
-	NDK_LIBS_OUT=$(BUILD_OUTDIR)/libs \
+	NDK_OUT=$(BUILD_С_OUTDIR)/obj \
+	NDK_LIBS_OUT=$(BUILD_С_OUTDIR)/libs \
 	NDK_APPLICATION_MK:=$(LOCAL_APPLICATION_MK) \
 	APP_PLATFORM=$(LOCAL_ANDROID_PLATFORM)
 
@@ -50,7 +44,7 @@ all:  $(BUILD_SHADERS_EMBEDDED) $(TOOLKIT_SHADERS_EMBEDDED)
 	+$(NDK)/ndk-build $(BUILD_ANDROID_ARGS) $(LOCAL_ANDROID_TARGET) --no-print-directory
 
 clean_local:
-	$(GLOBAL_RM) $(BUILD_OUTDIR)
+	$(GLOBAL_RM) -r $(BUILD_С_OUTDIR) $(BUILD_SHADERS_OUTDIR)
 
 clean: clean_local
 .PHONY: clean_local clean .prebuild_local all static

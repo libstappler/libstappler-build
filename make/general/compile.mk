@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2024 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,12 +18,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Progress counter
-COUNTER := 0
+# Процесс компиляции
 
-define counter_template =
-$(eval COUNTER=$(shell echo $$(($(COUNTER)+1))))
-$(1):BUILD_CURRENT_COUNTER:=$(COUNTER)
-$(1):BUILD_FILES_COUNTER:=$(COUNTER_WORDS)
-$(1):BUILD_LIBRARY:=$(COUNTER_NAME)
-endef
+sp_convert_path = $(1)
+sp_unconvert_path = $(1)
+
+GLOBAL_STDXX ?= gnu++2a
+GLOBAL_STD ?= gnu11
+
+# Загружаем предустановки
+include $(BUILD_ROOT)/utils/local-defaults.mk
+
+# Вычисляем компилятор и параметры компиляции
+include $(BUILD_ROOT)/shaders/compiler.mk
+include $(BUILD_ROOT)/c/compiler.mk
+include $(BUILD_ROOT)/wasm/compiler.mk
+
+# Вычисляем цели для сборки
+include $(BUILD_ROOT)/utils/build-targets.mk
+
+# Вычисляем сумму файлов на основании запрошенных модулей
+include $(BUILD_ROOT)/utils/resolve-modules.mk
+
+# Применяем к целевым файлам компиляторы
+include $(BUILD_ROOT)/shaders/apply.mk
+include $(BUILD_ROOT)/wasm/apply.mk
+include $(BUILD_ROOT)/c/apply.mk

@@ -26,13 +26,7 @@ WIN32 := 1
 
 BUILD_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-include $(BUILD_ROOT)/utils/local-defaults.mk
-
-include $(BUILD_ROOT)/compiler/compiler.mk
-
-include $(BUILD_ROOT)/utils/build-targets.mk
-
-include $(BUILD_ROOT)/compiler/apply.mk
+include $(BUILD_ROOT)/general/compile.mk
 
 all: $(BUILD_SHARED_LIBRARY) $(BUILD_EXECUTABLE) $(BUILD_STATIC_LIBRARY)
 
@@ -60,7 +54,7 @@ $(BUILD_INSTALL_EXECUTABLE): $(BUILD_EXECUTABLE)
 install: $(BUILD_INSTALL_SHARED_LIBRARY) $(BUILD_INSTALL_EXECUTABLE) $(BUILD_INSTALL_STATIC_LIBRARY)
 
 clean:
-	$(GLOBAL_RM) -r $(BUILD_OUTDIR) $(BUILD_SHADERS_OUTDIR)
+	$(GLOBAL_RM) -r $(BUILD_С_OUTDIR) $(BUILD_SHADERS_OUTDIR)
 
 .PHONY: all install clean
 

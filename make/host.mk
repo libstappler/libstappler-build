@@ -22,13 +22,7 @@
 BUILD_HOST := 1
 BUILD_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-include $(BUILD_ROOT)/utils/local-defaults.mk
-
-include $(BUILD_ROOT)/compiler/compiler.mk
-
-include $(BUILD_ROOT)/utils/build-targets.mk
-
-include $(BUILD_ROOT)/compiler/apply.mk
+include $(BUILD_ROOT)/general/compile.mk
 
 all: $(BUILD_SHARED_LIBRARY) $(BUILD_EXECUTABLE) $(BUILD_STATIC_LIBRARY) $(BUILD_EXECUTABLE_DSYM_GOAL)
 
@@ -36,7 +30,7 @@ ifdef LOCAL_FORCE_INSTALL
 all: install
 endif
 
-$(BUILD_EXECUTABLE) : $(BUILD_OBJS) $(BUILD_MAIN_OBJ)
+$(BUILD_EXECUTABLE) : $(BUILD_OBJS) $(BUILD_MAIN_OBJ) $(BUILD_WASM_OUTPUT)
 	$(GLOBAL_QUIET_LINK) $(GLOBAL_CPP) $(BUILD_OBJS) $(BUILD_MAIN_OBJ) $(BUILD_EXEC_LIBS) -o $(BUILD_EXECUTABLE)
 
 ifdef MACOS_ARCH
@@ -56,10 +50,10 @@ all: mac-export
 install: mac-export
 endif
 
-$(BUILD_SHARED_LIBRARY): $(BUILD_OBJS)
+$(BUILD_SHARED_LIBRARY): $(BUILD_OBJS) $(BUILD_WASM_OUTPUT)
 	$(GLOBAL_QUIET_LINK) $(GLOBAL_CPP) -shared  $(BUILD_OBJS) $(BUILD_DSO_LIBS) -o $(BUILD_SHARED_LIBRARY)
 
-$(BUILD_STATIC_LIBRARY): $(BUILD_OBJS)
+$(BUILD_STATIC_LIBRARY): $(BUILD_OBJS) $(BUILD_WASM_OUTPUT)
 	$(GLOBAL_QUIET_LINK) $(GLOBAL_AR) $(BUILD_STATIC_LIBRARY) $(BUILD_OBJS)
 
 $(BUILD_INSTALL_SHARED_LIBRARY): $(BUILD_SHARED_LIBRARY)
@@ -76,19 +70,19 @@ $(BUILD_INSTALL_EXECUTABLE): $(BUILD_EXECUTABLE) $(BUILD_EXECUTABLE_DSYM_GOAL)
 
 report: $(BUILD_OBJS) $(BUILD_EXECUTABLE)
 	$(BUILD_EXECUTABLE)
-	$(GLOBAL_MKDIR) $(BUILD_OUTDIR)/gcov
-	lcov --capture --directory . --output-file $(BUILD_OUTDIR)/gcov/coverage.info \
+	$(GLOBAL_MKDIR) $(BUILD_С_OUTDIR)/gcov
+	lcov --capture --directory . --output-file $(BUILD_С_OUTDIR)/gcov/coverage.info \
 		--exclude '/usr/include/*' --exclude '/usr/lib/*' \
 		--exclude $(realpath $(STAPPLER_ROOT))/'build/*' \
 		--exclude $(realpath $(STAPPLER_ROOT))/'deps/*' \
 		--exclude $(realpath $(STAPPLER_ROOT))/'tests/*' \
 		--exclude $(realpath $(STAPPLER_ROOT))/core/'thirdparty/*' \
 		--exclude $(realpath $(STAPPLER_ROOT))/xenolith/'thirdparty/*'
-	genhtml $(BUILD_OUTDIR)/gcov/coverage.info --demangle-cpp --output-directory $(BUILD_OUTDIR)/html
+	genhtml $(BUILD_С_OUTDIR)/gcov/coverage.info --demangle-cpp --output-directory $(BUILD_С_OUTDIR)/html
 
 install: $(BUILD_INSTALL_SHARED_LIBRARY) $(BUILD_INSTALL_EXECUTABLE) $(BUILD_INSTALL_STATIC_LIBRARY)
 
 clean:
-	$(GLOBAL_RM) -r $(BUILD_OUTDIR) $(BUILD_SHADERS_OUTDIR)
+	$(GLOBAL_RM) -r $(BUILD_С_OUTDIR) $(BUILD_SHADERS_OUTDIR) $(BUILD_WIT_OUTDIR) $(BUILD_WASM_OUTDIR)
 
 .PHONY: all report install clean

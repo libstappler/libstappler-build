@@ -35,6 +35,8 @@ XWIN_PATH ?= deps/xwin
 XWIN_REPLACEMENTS_INCLUDE := $(XWIN_PATH)/../windows/replacements/include
 XWIN_REPLACEMENTS_BIN := $(XWIN_PATH)/../windows/replacements/bin
 
+XWIN_CRT_VERSION ?= Microsoft.VC.14.38.17.8.CRT
+
 XWIN_CRT_INCLUDE += \
 	$(XWIN_PATH)/splat/crt/include \
 	$(XWIN_PATH)/splat/sdk/include/ucrt \
@@ -46,8 +48,9 @@ XWIN_CRT_LIB += \
 	$(XWIN_PATH)/splat/sdk/lib/um/$(OSTYPE_ARCH) \
 	$(XWIN_PATH)/splat/sdk/lib/ucrt/$(OSTYPE_ARCH) \
 	$(XWIN_PATH)/.xwin-cache/unpack/ucrt.msi/lib/ucrt/$(OSTYPE_ARCH_LOCAL) \
-	$(XWIN_PATH)/.xwin-cache/unpack/Microsoft.VC.14.38.17.8.CRT.$(OSTYPE_ARCH_LOCAL).Desktop.base.vsix/lib/$(OSTYPE_ARCH_LOCAL)
+	$(XWIN_PATH)/.xwin-cache/unpack/$(XWIN_CRT_VERSION).$(OSTYPE_ARCH_LOCAL).Desktop.base.vsix/lib/$(OSTYPE_ARCH_LOCAL)
 
+OSTYPE_DEPS := deps/windows/$(OSTYPE_ARCH)
 OSTYPE_PREBUILT_PATH := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/lib $(XWIN_CRT_LIB)
 OSTYPE_INCLUDE := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/include  $(XWIN_REPLACEMENTS_INCLUDE) $(XWIN_CRT_INCLUDE)
 OSTYPE_CFLAGS :=  -DWIN32 -DXWIN -Wall --target=$(OSTYPE_TARGET) -m64 -msse2 -D_MT \

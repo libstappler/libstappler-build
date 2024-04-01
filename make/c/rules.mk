@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,6 @@ else
 sp_os_path = $(1)
 endif
 
-sp_convert_path = $(1)
-sp_unconvert_path = $(1)
-
 ifeq ($(CLANG),1)
 ifdef MSYS
 # Записываем имя зависимости в формате unix, иначе make не сможет её сопоставить
@@ -54,9 +51,9 @@ sp_compile_mm = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
 
 sp_copy_header = @@$(GLOBAL_MKDIR) $(dir $@); cp -f $< $@
 
-$(call sp_toolkit_source_list, $($(TOOLKIT_NAME)_SRCS_DIRS), $($(TOOLKIT_NAME)_SRCS_OBJS))
+# $(call sp_toolkit_source_list, $($(TOOLKIT_NAME)_SRCS_DIRS), $($(TOOLKIT_NAME)_SRCS_OBJS))
 
-sp_toolkit_source_list = $(foreach f,\
+sp_toolkit_source_list_c = $(foreach f,\
 	$(realpath $(foreach dir,$(filter /%,$(1)),$(shell find $(dir) \( -name "*.c" -or -name "*.cpp" \)))) \
 	$(realpath $(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) \( -name "*.c" -or -name "*.cpp" \)))) \
 	$(abspath $(filter /%,$(filter-out %.mm,$(2)))) \
@@ -69,7 +66,9 @@ sp_toolkit_source_list = $(foreach f,\
 	)\
 ,$(call sp_unconvert_path,$(f)))
 
-sp_toolkit_source_list_abs = $(foreach f,$(abspath\
+sp_toolkit_source_list = $(call sp_toolkit_source_list_c,$(1),$(filter-out %.wit,$(2)))
+
+sp_toolkit_source_list_abs_c = $(foreach f,$(abspath\
 	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) \( -name "*.c" -or -name "*.cpp" \))) \
 	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) \( -name "*.c" -or -name "*.cpp" \))) \
 	$(filter /%,$(filter-out %.mm,$(2))) \
@@ -81,6 +80,8 @@ sp_toolkit_source_list_abs = $(foreach f,$(abspath\
 		$(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter %.mm,$(2))))\
 	)\
 ),$(call sp_unconvert_path,$(f)))
+
+sp_toolkit_source_list_abs = $(call sp_toolkit_source_list_abs_c,$(1),$(filter-out %.wit,$(2)))
 
 sp_toolkit_include_list = $(foreach f,$(realpath\
 	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -type d)) \
@@ -101,7 +102,7 @@ sp_toolkit_prefix_files_list = \
 sp_toolkit_include_flags = \
 	$(addprefix -I,$(sort $(dir $(1)))) $(addprefix -I,$(2))
 
-sp_local_source_list = \
+sp_local_source_list_c = \
 	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.cpp')) \
 	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.c')) \
 	$(filter /%,$(filter-out %.mm,$(2))) \
@@ -114,6 +115,8 @@ sp_local_source_list = \
 		$(filter /%,$(filter %.mm,$(2)))\
 		$(addprefix $(LOCAL_ROOT)/,$(filter-out /%,$(filter %.mm,$(2))))\
 	)
+
+sp_local_source_list = $(call sp_local_source_list_c,$(1),$(filter-out %.wit,$(2)))
 
 sp_local_include_list = \
 	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -type d)) \
