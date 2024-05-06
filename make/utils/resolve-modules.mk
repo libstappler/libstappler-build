@@ -53,6 +53,8 @@ TOOLKIT_SHADERS_DIR += $($(1)_SHADERS_DIR)
 TOOLKIT_SHADERS_INCLUDE += $($(1)_SHADERS_INCLUDE)
 TOOLKIT_SRCS_DIRS_WITH_SHADERS += $(if $($(1)_SHADERS_DIR),$($(1)_SRCS_DIRS))
 TOOLKIT_SRCS_OBJS_WITH_SHADERS += $(if $($(1)_SHADERS_DIR),$($(1)_SRCS_OBJS))
+TOOLKIT_WASM_DIRS += $($(1)_WASM_DIRS)
+TOOLKIT_WASM_OBJS += $($(1)_WASM_OBJS)
 endef
 
 reverse_modules = $(if $(wordlist 2,2,$(1)),$(call reverse_modules,$(wordlist 2,$(words $(1)),$(1))) $(firstword $(1)),$(1))

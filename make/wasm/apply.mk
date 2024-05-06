@@ -51,9 +51,11 @@ $(BUILD_WIT_OUTDIR)/wit/package.wit : $(BUILD_WITS_OBJS)
 		| sed 's/^[^@]*@import[^a-z]*interface[^a-z]*\([a-z]*\)$$/	import \1;/g' >> $@
 	@grep -Gr '^[^@]*@export[^a-z]*interface[^a-z]*[a-z\-]*'  --only-matching $(BUILD_WIT_OUTDIR)/wit  --no-filename \
 		| sed 's/^[^@]*@export[^a-z]*interface[^a-z]*\([a-z]*\)$$/	export \1;/g' >> $@
+	@printf "	export initialize: func();\n" >> $@
+	@printf "	export finalize: func();\n" >> $@
 	@printf '}\n' >> $@
 
-$(BUILD_WIT_OUTDIR)/c/stappler.h : $(BUILD_WITS)
+$(BUILD_WIT_OUTDIR)/c/stappler.c : $(BUILD_WITS)
 	$(GLOBAL_QUIET_WIT_BINDGEN) $(WIT_BINDGEN) c $(BUILD_WIT_OUTDIR)/wit --out-dir $(BUILD_WIT_OUTDIR)/c
 
 $(foreach WIT,$(TOOLKIT_WITS_SRCS) $(BUILD_WITS_SRCS),$(eval $(call BUILD_WITS_copy_rule,$(WIT))))
@@ -61,15 +63,14 @@ $(foreach WIT,$(TOOLKIT_WITS_SRCS) $(BUILD_WITS_SRCS),$(eval $(call BUILD_WITS_c
 -include $(patsubst %.o,%.o.d,$(BUILD_WASM_OBJS))
 
 define TOOLKIT_wasm_c_rule
-$(info TOOLKIT_wasm_c_rule $(addprefix $(2),$(patsubst %.c,%.o,$(realpath $(1)))) $(1) $(2) $(3))
 $(addprefix $(2),$(patsubst %.c,%.o,$(realpath $(1)))): \
-		$(1) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(BUILD_WIT_OUTDIR)/c/stappler.h
+		$(1) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(BUILD_WIT_OUTDIR)/c/stappler.c
 	$$(call sp_compile_wasm_c,$(3))
 endef
 
 define TOOLKIT_wasm_cpp_rule
-$(abspath $(addprefix $(2),$(patsubst %.cpp,%.o,$(realpath $(1))))): \
-		$(1) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(BUILD_WIT_OUTDIR)/c/stappler.h
+$(addprefix $(2),$(patsubst %.cpp,%.o,$(realpath $(1)))): \
+		$(1) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(BUILD_WIT_OUTDIR)/c/stappler.c
 	$$(call sp_compile_wasm_cpp,$(3))
 endef
 
@@ -81,13 +82,17 @@ $(foreach target,\
 	$(sort $(filter %.cpp,$(BUILD_WASM_SRCS))),\
 	$(eval $(call TOOLKIT_wasm_cpp_rule,$(target),$(BUILD_WASM_OUTDIR),$(BUILD_WASM_CXXFLAGS))))
 
-$(BUILD_WASM_OUTDIR)/module.wasm: $(BUILD_WASM_OBJS)
-	$(GLOBAL_QUIET_WASM_LINK) $(WASI_SDK_CC) $(BUILD_WASM_CFLAGS) $(BUILD_WIT_OUTDIR)/c/stappler.c  $(BUILD_WIT_OUTDIR)/c/stappler_component_type.o \
-		$(BUILD_WASM_OBJS) $(BUILD_WASM_LDFLAGS) -o $(BUILD_WASM_OUTDIR)/module.wasm
-
-ifneq ($(BUILD_WASM_OBJS),)
-$(info WASM: $(BUILD_WASM_OBJS) $(BUILD_WASM_OUTDIR)/module.wasm)
-BUILD_WASM_OUTPUT := $(BUILD_WASM_OUTDIR)/module.wasm
+ifeq ($(filter %.cpp,$(BUILD_WASM_SRCS)),)
+WASI_LINK_TOOL := $(WASI_SDK_CC)
 else
-BUILD_WASM_OUTPUT :=
+WASI_LINK_TOOL := $(WASI_SDK_CXX)
+endif
+
+$(BUILD_WIT_OUTDIR)/c/stappler.o : $(BUILD_WIT_OUTDIR)/c/stappler.c
+	$(call sp_compile_wasm_c,$(BUILD_WASM_CFLAGS))
+
+ifdef LOCAL_WASM_MODULE
+$(BUILD_WASM_MODULE): $(BUILD_WASM_OBJS) $(BUILD_WIT_OUTDIR)/c/stappler.o
+	$(GLOBAL_QUIET_WASM_LINK) $(WASI_LINK_TOOL) $(BUILD_WASM_CFLAGS_DEFAULT) $(BUILD_WIT_OUTDIR)/c/stappler.o  $(BUILD_WIT_OUTDIR)/c/stappler_component_type.o \
+		$(BUILD_WASM_OBJS) $(BUILD_WASM_LDFLAGS) -o $(BUILD_WASM_MODULE)
 endif

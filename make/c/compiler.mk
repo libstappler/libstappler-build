@@ -128,8 +128,8 @@ GLOBAL_LDFLAGS :=
 ifdef COVERAGE
 	ifndef CLANG
 		BUILD_TYPE := coverage
-		GLOBAL_CFLAGS += -fprofile-arcs -ftest-coverage
-		GLOBAL_CXXFLAGS += -fprofile-arcs -ftest-coverage
+		GLOBAL_CFLAGS += -fprofile-arcs -ftest-coverage -DCOVERAGE
+		GLOBAL_CXXFLAGS += -fprofile-arcs -ftest-coverage -DCOVERAGE
 		GLOBAL_LDFLAGS += -fprofile-arcs -ftest-coverage
 	endif
 endif

@@ -23,26 +23,46 @@ WIT_BINDGEN ?= wit-bindgen
 WASI_SDK ?= /opt/wasi-sdk
 WASI_SDK_CC ?= $(WASI_SDK)/bin/clang
 WASI_SDK_CXX ?= $(WASI_SDK)/bin/clang++
+WASI_THREADS ?= 1
+
+GLOBAL_WASM_OPTIMIZATION ?= -Os
 
 BUILD_WIT_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(WIT_BINDGEN))/$(BUILD_TYPE)
 BUILD_WASM_OUTDIR := $(BUILD_OUTDIR)/wasm/$(notdir $(WASI_SDK_CC))/$(BUILD_TYPE)
 
-BUILD_WASM_CFLAGS_DEFAULT := -DSTAPPLER -DWASM -mtail-call -mreference-types -mbulk-memory -msign-ext -mmultivalue \
-	 --target=wasm32-wasi -Os
+ifeq ($(WASI_THREADS),1)
+BUILD_WASM_CFLAGS_DEFAULT := -DSTAPPLER -DWASM -mreference-types -mbulk-memory -msign-ext -mmultivalue -mtail-call \
+	 --target=wasm32-wasi-threads
+else
+BUILD_WASM_CFLAGS_DEFAULT := -DSTAPPLER -DWASM -mreference-types -mbulk-memory -msign-ext -mmultivalue -mtail-call \
+	 --target=wasm32-wasi
+endif
 
 ifdef WASI_SYSROOT
 BUILD_WASM_CFLAGS_DEFAULT += --sysroot=$(WASI_SYSROOT)
 endif
 
-BUILD_WASM_LDFLAGS :=  -z stack-size=4096 -Wl,--no-entry
+ifeq ($(GLOBAL_WASM_DEBUG),1)
+$(info WASM debug enabled)
+ifdef RELEASE
+BUILD_WASM_CFLAGS_DEFAULT += $(GLOBAL_WASM_OPTIMIZATION) -DNDEBUG
+else
+BUILD_WASM_CFLAGS_DEFAULT += -g -DDEBUG
+endif # ifdef RELEASE
+else
+BUILD_WASM_CFLAGS_DEFAULT += $(GLOBAL_WASM_OPTIMIZATION) -DNDEBUG
+endif
+
+# Force WASI to export memory allocation functions
+BUILD_WASM_LDFLAGS := -z stack-size=4096 -Wl,--no-entry -Wl,--export=malloc -Wl,--export=free -Wl,--export=realloc -mexec-model=reactor
 
 BUILD_WASM_CFLAGS_INIT := $(BUILD_WASM_CFLAGS_DEFAULT) -std=$(GLOBAL_STD)
-BUILD_WASM_CXXFLAGS_INIT := $(BUILD_WASM_CFLAGS_DEFAULT) -std=$(GLOBAL_STDXX)
+BUILD_WASM_CXXFLAGS_INIT := $(BUILD_WASM_CFLAGS_DEFAULT) -std=$(GLOBAL_STDXX) -fno-exceptions
 
 sp_compile_wasm_c = $(GLOBAL_QUIET_WASM_CC) $(GLOBAL_MKDIR) $(dir $@); $(WASI_SDK_CC) \
 	$(OSTYPE_C_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
 
-sp_compile_wasm_cpp = $(GLOBAL_QUIET_WASM_CPP) $(GLOBAL_MKDIR) $(dir $@); $(WASI_SDK_CXX) \
+sp_compile_wasm_cpp = $(GLOBAL_QUIET_WASM_CXX) $(GLOBAL_MKDIR) $(dir $@); $(WASI_SDK_CXX) \
 	$(OSTYPE_CPP_FILE) $(call sp_compile_dep, $@, $(1))  -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
 
 sp_toolkit_wit_list = $(foreach f,\
