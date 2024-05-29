@@ -70,7 +70,7 @@ BUILD_WORDS := $(words $(BUILD_OBJS) $(BUILD_MAIN_OBJ) $(TOOLKIT_OBJS) $(TOOLKIT
 # Настраиваем шаблон прогресса
 include $(BUILD_ROOT)/utils/verbose.mk
 
-$(foreach obj,$(BUILD_OBJS) $(BUILD_MAIN_OBJ) $(TOOLKIT_OBJS) $(TOOLKIT_GCH),$(eval $(call BUILD_template,$(obj))))
+$(foreach obj,$(TOOLKIT_GCH) $(BUILD_OBJS) $(TOOLKIT_OBJS) $(BUILD_MAIN_OBJ),$(eval $(call BUILD_template,$(obj))))
 
 # Cписок директорий для включения от фреймворка
 TOOLKIT_INCLUDES := $(call sp_toolkit_include_list, $(TOOLKIT_INCLUDES_DIRS), $(TOOLKIT_INCLUDES_OBJS))
@@ -86,9 +86,9 @@ TOOLKIT_CXXFLAGS := $(GLOBAL_CXXFLAGS) $(TOOLKIT_FLAGS) $(TOOLKIT_INPUT_CFLAGS)
 BUILD_CFLAGS += $(LOCAL_CFLAGS) $(TOOLKIT_CFLAGS)
 BUILD_CXXFLAGS += $(LOCAL_CFLAGS) $(LOCAL_CXXFLAGS) $(TOOLKIT_CXXFLAGS)
 
-BUILD_LOCAL_OBJS := $(BUILD_OBJS) $(BUILD_MAIN_OBJ)
-
+ifneq ($(LOCAL_BUILD_SHARED),3)
 BUILD_OBJS += $(TOOLKIT_OBJS)
+endif
 BUILD_GCH += $(TOOLKIT_GCH)
 
 BUILD_CFLAGS += $(addprefix -I,$(BUILD_INCLUDES))

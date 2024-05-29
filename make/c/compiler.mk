@@ -55,8 +55,8 @@ endif
 
 ifeq ($(STAPPLER_ARCH),aarch64)
 ifneq ($(STAPPLER_ARCH),$(UNAME_ARCH))
-GLOBAL_CPP := aarch64-linux-gnu-g++
-GLOBAL_CC := aarch64-linux-gnu-gcc
+GLOBAL_CPP ?= aarch64-linux-gnu-g++
+GLOBAL_CC ?= aarch64-linux-gnu-gcc
 endif
 endif
 
@@ -120,9 +120,9 @@ ifdef STAPPLER_VERSION_PREFIX
 GLOBAL_CFLAGS += -DSTAPPLER_VERSION_PREFIX=$(STAPPLER_VERSION_PREFIX)
 endif
 
-GLOBAL_CXXFLAGS := $(GLOBAL_CFLAGS) -DSTAPPLER -std=$(GLOBAL_STDXX) $(OSTYPE_CPPFLAGS)
+GLOBAL_CXXFLAGS := $(GLOBAL_CFLAGS) -DSTAPPLER -std=$(GLOBAL_STDXX) $(OSTYPE_CPPFLAGS) $(GLOBAL_CXXFLAGS)
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) -DSTAPPLER -std=$(GLOBAL_STD)
-GLOBAL_LDFLAGS :=
+GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS)
 
 # Если запрошено покрытие тестами  добавляем флаги профпайлинга
 ifdef COVERAGE
