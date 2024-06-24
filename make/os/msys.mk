@@ -36,7 +36,7 @@ XWIN_REPLACEMENTS_BIN := deps/windows/replacements/bin
 OSTYPE_PREBUILT_PATH := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/lib
 OSTYPE_INCLUDE := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/include  $(XWIN_REPLACEMENTS_INCLUDE)
 OSTYPE_CFLAGS :=  -DWIN32 -DMSYS -Wall --target=$(OSTYPE_TARGET) -m64 -msse2 -D_MT \
-	-Wno-unqualified-std-cast-call -Wno-microsoft-include -Wno-nonportable-include-path
+	-Wno-unqualified-std-cast-call -Wno-microsoft-include -Wno-nonportable-include-path -Wno-vla-cxx-extension
 OSTYPE_CPPFLAGS := -Wno-overloaded-virtual -frtti
 
 OSTYPE_EXEC_SUFFIX := .exe
