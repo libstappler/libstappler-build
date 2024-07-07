@@ -26,98 +26,170 @@ else
 TOOLKIT_LIBS := $(call sp_toolkit_resolve_libs, $(realpath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH))), $(TOOLKIT_LIBS)) $(LDFLAGS)
 endif
 
-# Список полных путей к компилируемым файлам фреймворка
-TOOLKIT_SRCS := $(call sp_toolkit_source_list, $(TOOLKIT_SRCS_DIRS), $(TOOLKIT_SRCS_OBJS)) \
-	$(call sp_toolkit_source_list_abs, $(TOOLKIT_SRCS_DIRS_ABS), $(TOOLKIT_SRCS_OBJS_ABS))
-
-# Список полных путей к компилируемым файлам, для которых нужно скомпилировать шейдеры
-TOOLKIT_SRCS_WITH_SHADERS := $(call sp_toolkit_source_list, $(TOOLKIT_SRCS_DIRS_WITH_SHADERS), $(TOOLKIT_SRCS_OBJS_WITH_SHADERS)) \
-	$(call sp_toolkit_source_list_abs, $(TOOLKIT_SRCS_DIRS_ABS), $(TOOLKIT_SRCS_OBJS_ABS))
-
 # Список полных путей к прекомпилируемым заголовкам
-TOOLKIT_PRECOMPILED_HEADERS :=  $(call sp_toolkit_resolve_prefix_files,$(TOOLKIT_PRECOMPILED_HEADERS))
+TOOLKIT_PRECOMPILED_HEADERS := $(call sp_toolkit_resolve_prefix_files,$(TOOLKIT_PRECOMPILED_HEADERS))
 
 # Список полных путей к копиям прекомпилируемых заголовков в директории сборки
 # Копирование необходимо, чтобы обеспечить приоритет включения предкомпилируемых заголовков
-TOOLKIT_H_GCH := $(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR),$(TOOLKIT_PRECOMPILED_HEADERS))
+TOOLKIT_LIB_H_GCH := $(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_PRECOMPILED_HEADERS))
+TOOLKIT_EXEC_H_GCH := $(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_PRECOMPILED_HEADERS))
 
 # Список финальных предкомпилированных заголовков
-TOOLKIT_GCH := $(addsuffix .gch,$(TOOLKIT_H_GCH))
-
-# Список объектных файлов, относящихся к фреймворку
-TOOLKIT_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR),$(TOOLKIT_SRCS))
-
-# Список полных путей к компилируемым файлам приложения
-BUILD_SRCS := $(call sp_local_source_list,$(LOCAL_SRCS_DIRS),$(LOCAL_SRCS_OBJS))
-
-# Список объектных файлов приложения
-BUILD_OBJS := $(call sp_local_object_list,$(BUILD_С_OUTDIR),$(BUILD_SRCS))
-
-# Определяем объектный файл для файла, содержащего функцию main платформы
-ifdef LOCAL_MAIN
-BUILD_MAIN_SRC := $(realpath $(addprefix $(LOCAL_ROOT)/,$(LOCAL_MAIN)))
-BUILD_MAIN_SRC := $(BUILD_MAIN_SRC:.c=.o)
-BUILD_MAIN_SRC := $(BUILD_MAIN_SRC:.cpp=.o)
-BUILD_MAIN_SRC := $(BUILD_MAIN_SRC:.mm=.o)
-BUILD_MAIN_OBJ := $(addprefix $(BUILD_С_OUTDIR),$(BUILD_MAIN_SRC))
-else
-BUILD_MAIN_OBJ := 
-endif
-
-# Список терминов для подсчёта прогресса
-BUILD_WORDS := $(words $(BUILD_OBJS) $(BUILD_MAIN_OBJ) $(TOOLKIT_OBJS) $(TOOLKIT_GCH))
-
-# Настраиваем шаблон прогресса
-include $(BUILD_ROOT)/utils/verbose.mk
-
-$(foreach obj,$(TOOLKIT_GCH) $(BUILD_OBJS) $(TOOLKIT_OBJS) $(BUILD_MAIN_OBJ),$(eval $(call BUILD_template,$(obj))))
+TOOLKIT_LIB_GCH := $(addsuffix .gch,$(TOOLKIT_LIB_H_GCH))
+TOOLKIT_EXEC_GCH := $(addsuffix .gch,$(TOOLKIT_EXEC_H_GCH))
 
 # Cписок директорий для включения от фреймворка
 TOOLKIT_INCLUDES := $(call sp_toolkit_include_list, $(TOOLKIT_INCLUDES_DIRS), $(TOOLKIT_INCLUDES_OBJS))
 
 # Cписок директорий для включения от приложения
-BUILD_INCLUDES := $(call sp_local_include_list,$(LOCAL_INCLUDES_DIRS),$(LOCAL_INCLUDES_OBJS),$(LOCAL_ABSOLUTE_INCLUDES))
+BUILD_INCLUDES := $(call sp_local_include_list,$(LOCAL_INCLUDES_DIRS),$(LOCAL_INCLUDES_OBJS))
 
-TOOLKIT_INPUT_CFLAGS := $(call sp_toolkit_include_flags,$(TOOLKIT_GCH),$(TOOLKIT_INCLUDES)) $(TOOLKIT_SHADERS_TARGET_INCLUDE)
+BUILD_GENERAL_CFLAGS := \
+	$(GLOBAL_GENERAL_CFLAGS) \
+	$(TOOLKIT_GENERAL_CFLAGS) \
+	$(LOCAL_CFLAGS) \
+	$(addprefix -I,$(TOOLKIT_INCLUDES)) \
+	$(addprefix -I,$(BUILD_INCLUDES)) \
+	$(BUILD_SHADERS_TARGET_INCLUDE) \
+	$(TOOLKIT_SHADERS_TARGET_INCLUDE)
 
-TOOLKIT_CFLAGS := $(GLOBAL_CFLAGS) $(TOOLKIT_FLAGS) $(TOOLKIT_INPUT_CFLAGS)
-TOOLKIT_CXXFLAGS := $(GLOBAL_CXXFLAGS) $(TOOLKIT_FLAGS) $(TOOLKIT_INPUT_CFLAGS)
+BUILD_GENERAL_CXXFLAGS := \
+	$(GLOBAL_GENERAL_CXXFLAGS) \
+	$(TOOLKIT_GENERAL_CXXFLAGS) \
+	$(LOCAL_CXXFLAGS) \
+	$(addprefix -I,$(TOOLKIT_INCLUDES)) \
+	$(addprefix -I,$(BUILD_INCLUDES)) \
+	$(BUILD_SHADERS_TARGET_INCLUDE) \
+	$(TOOLKIT_SHADERS_TARGET_INCLUDE)
 
-BUILD_CFLAGS += $(LOCAL_CFLAGS) $(TOOLKIT_CFLAGS)
-BUILD_CXXFLAGS += $(LOCAL_CFLAGS) $(LOCAL_CXXFLAGS) $(TOOLKIT_CXXFLAGS)
+BUILD_EXEC_CFLAGS := \
+	$(addprefix -I,$(sort $(dir $(TOOLKIT_EXEC_GCH)))) \
+	$(BUILD_GENERAL_CFLAGS) \
+	$(GLOBAL_EXEC_CFLAGS) \
+	$(TOOLKIT_EXEC_CFLAGS)
 
-ifneq ($(LOCAL_BUILD_SHARED),3)
-BUILD_OBJS += $(TOOLKIT_OBJS)
-endif
-BUILD_GCH += $(TOOLKIT_GCH)
+BUILD_EXEC_CXXFLAGS := \
+	$(addprefix -I,$(sort $(dir $(TOOLKIT_EXEC_GCH)))) \
+	$(BUILD_GENERAL_CXXFLAGS) \
+	$(GLOBAL_EXEC_CXXFLAGS) \
+	$(TOOLKIT_EXEC_CXXFLAGS)
 
-BUILD_CFLAGS += $(addprefix -I,$(BUILD_INCLUDES))
-BUILD_CXXFLAGS += $(addprefix -I,$(BUILD_INCLUDES))
+BUILD_LIB_CFLAGS := \
+	$(addprefix -I,$(sort $(dir $(TOOLKIT_LIB_GCH)))) \
+	$(BUILD_GENERAL_CFLAGS) \
+	$(GLOBAL_LIB_CFLAGS) \
+	$(TOOLKIT_LIB_CFLAGS)
 
-BUILD_LOCAL_LIBS := $(foreach lib,$(LOCAL_LIBS),-L$(dir $(lib)) -l:$(notdir $(lib)))
-BUILD_EXEC_LIBS := $(BUILD_LOCAL_LIBS) $(TOOLKIT_LIBS) $(GLOBAL_LDFLAGS) $(LOCAL_LDFLAGS) $(OSTYPE_EXEC_FLAGS)
+BUILD_LIB_CXXFLAGS := \
+	$(addprefix -I,$(sort $(dir $(TOOLKIT_LIB_GCH)))) \
+	$(BUILD_GENERAL_CXXFLAGS) \
+	$(GLOBAL_LIB_CXXFLAGS) \
+	$(TOOLKIT_LIB_CXXFLAGS)
 
-ifeq ($(LOCAL_BUILD_SHARED),3)
-BUILD_DSO_LIBS := $(BUILD_LOCAL_LIBS) $(GLOBAL_LDFLAGS) $(LOCAL_LDFLAGS) $(OSTYPE_STANDALONE_LDFLAGS)
-else
+BUILD_GENERAL_LDFLAGS := \
+	$(GLOBAL_GENERAL_LDFLAGS) \
+	$(TOOLKIT_GENERAL_LDFLAGS) \
+	$(LOCAL_LDFLAGS) \
+	$(TOOLKIT_LIBS) \
+	$(call sp_toolkit_resolve_libs $(LOCAL_LIBS))
 
-ifeq ($(LOCAL_BUILD_SHARED),2)
-BUILD_DSO_LIBS := $(BUILD_LOCAL_LIBS) $(TOOLKIT_LIBS) $(GLOBAL_LDFLAGS) $(LOCAL_LDFLAGS) $(OSTYPE_STANDALONE_LDFLAGS)
-else
-BUILD_DSO_LIBS := $(BUILD_LOCAL_LIBS) $(TOOLKIT_LIBS) $(GLOBAL_LDFLAGS) $(LOCAL_LDFLAGS) $(OSTYPE_LDFLAGS)
-endif
+BUILD_EXEC_LDFLAGS := \
+	$(BUILD_GENERAL_LDFLAGS) \
+	$(GLOBAL_EXEC_LDFLAGS) \
+	$(TOOLKIT_EXEC_LDFLAGS)
 
-endif
+BUILD_LIB_LDFLAGS := \
+	$(BUILD_GENERAL_LDFLAGS) \
+	$(GLOBAL_LIB_LDFLAGS) \
+	$(TOOLKIT_LIB_LDFLAGS) \
+	$(if $(filter-out $(LOCAL_BUILD_SHARED),1),$(OSTYPE_STANDALONE_LDFLAGS))
 
-include $(BUILD_ROOT)/utils/make-toolkit.mk
+$(foreach target,$(TOOLKIT_PRECOMPILED_HEADERS),\
+	$(eval $(call BUILD_include_rule,$(target),\
+		$(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/lib,$(target)))\
+	))
 
--include $(patsubst %.o,%.o.d,$(BUILD_OBJS) $(BUILD_MAIN_OBJ))
+$(foreach target,$(TOOLKIT_PRECOMPILED_HEADERS),\
+	$(eval $(call BUILD_include_rule,$(target),\
+		$(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/exec,$(target)))\
+	))
 
-$(BUILD_С_OUTDIR)/%.o: /%.cpp $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
-	$(call sp_compile_cpp,$(BUILD_CXXFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
+$(foreach target,$(TOOLKIT_LIB_GCH),$(eval $(call BUILD_gch_rule,$(target),$(BUILD_LIB_CXXFLAGS))))
+$(foreach target,$(TOOLKIT_EXEC_GCH),$(eval $(call BUILD_gch_rule,$(target),$(BUILD_EXEC_CXXFLAGS))))
 
-$(BUILD_С_OUTDIR)/%.o: /%.mm $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
-	$(call sp_compile_mm,$(BUILD_CXXFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
 
-$(BUILD_С_OUTDIR)/%.o: /%.c $(BUILD_H_GCH) $(BUILD_GCH) $(BUILD_MODULES) $(BUILD_SHADERS_EMBEDDED)
-	$(call sp_compile_c,$(BUILD_CFLAGS) $(BUILD_SHADERS_TARGET_INCLUDE))
+# Список полных путей к компилируемым файлам фреймворка
+TOOLKIT_SRCS := $(call sp_toolkit_source_list, $(TOOLKIT_SRCS_DIRS), $(TOOLKIT_SRCS_OBJS))
+
+# Список полных путей к компилируемым файлам, для которых нужно скомпилировать шейдеры
+TOOLKIT_SRCS_WITH_SHADERS := $(call sp_toolkit_source_list, $(TOOLKIT_SRCS_DIRS_WITH_SHADERS), $(TOOLKIT_SRCS_OBJS_WITH_SHADERS))
+
+# Список полных путей к компилируемым файлам приложения
+BUILD_SRCS := $(call sp_local_source_list,$(LOCAL_SRCS_DIRS),$(LOCAL_SRCS_OBJS))
+
+BUILD_MAIN_SRC := $(if $(LOCAL_MAIN),$(realpath $(addprefix $(LOCAL_ROOT)/,$(LOCAL_MAIN))))
+
+BUILD_ALL_SRCS := \
+	$(TOOLKIT_SRCS) \
+	$(BUILD_SRCS) \
+	$(BUILD_MAIN_SRC)
+
+$(foreach target,\
+	$(sort $(filter %.c,$(BUILD_ALL_SRCS))),\
+	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CFLAGS))))
+
+$(foreach target,\
+	$(sort $(filter %.cpp,$(BUILD_ALL_SRCS))),\
+	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
+
+$(foreach target,\
+	$(sort $(filter %.mm,$(BUILD_ALL_SRCS))),\
+	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
+
+$(foreach target,\
+	$(sort $(filter %.c,$(BUILD_ALL_SRCS))),\
+	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CFLAGS))))
+
+$(foreach target,\
+	$(sort $(filter %.cpp,$(BUILD_ALL_SRCS))),\
+	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
+
+$(foreach target,\
+	$(sort $(filter %.mm,$(BUILD_ALL_SRCS))),\
+	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
+
+# Список объектных файлов, относящихся к фреймворку
+TOOLKIT_LIB_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_SRCS))
+TOOLKIT_EXEC_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_SRCS))
+
+# Список объектных файлов приложения
+BUILD_LIB_OBJS := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/lib,$(BUILD_SRCS))
+BUILD_EXEC_OBJS := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/exec,$(BUILD_SRCS))
+
+BUILD_MAIN_OBJ := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/exec,$(BUILD_MAIN_SRC))
+
+# Список терминов для подсчёта прогресса
+BUILD_LIB_WORDS := $(words $(TOOLKIT_LIB_GCH) $(BUILD_LIB_OBJS) $(TOOLKIT_LIB_OBJS))
+BUILD_EXEC_WORDS := $(words $(TOOLKIT_EXEC_GCH) $(BUILD_EXEC_OBJS) $(BUILD_MAIN_OBJ) $(TOOLKIT_EXEC_OBJS))
+
+# Настраиваем шаблон прогресса
+include $(BUILD_ROOT)/utils/verbose.mk
+
+$(foreach obj,$(TOOLKIT_EXEC_GCH) $(BUILD_EXEC_OBJS) $(TOOLKIT_EXEC_OBJS) $(BUILD_MAIN_OBJ),\
+	$(eval $(call BUILD_EXEC_template,$(obj),$(LOCAL_EXECUTABLE),$(BUILD_EXEC_WORDS))))
+
+$(foreach obj,$(TOOLKIT_LIB_GCH) $(BUILD_LIB_OBJS) $(TOOLKIT_LIB_OBJS),\
+	$(eval $(call BUILD_LIB_template,$(obj),$(LOCAL_LIBRARY),$(BUILD_LIB_WORDS))))
+
+BUILD_EXEC_OBJS := \
+	$(BUILD_EXEC_OBJS) \
+	$(TOOLKIT_EXEC_OBJS) \
+	$(BUILD_MAIN_OBJ)
+
+BUILD_LIB_OBJS := \
+	$(BUILD_LIB_OBJS) \
+	$(if $(filter-out $(LOCAL_BUILD_SHARED),3),$(TOOLKIT_LIB_OBJS))
+
+# include dependencies
+-include $(patsubst %.o,%.o.d,$(BUILD_EXEC_OBJS) $(BUILD_LIB_OBJS))
+-include $(patsubst %.h.gch,%.h.gch.d,$(TOOLKIT_EXEC_GCH) $(TOOLKIT_LIB_GCH))

@@ -23,18 +23,26 @@
 sp_convert_path = $(1)
 sp_unconvert_path = $(1)
 
-GLOBAL_STDXX ?= gnu++2a
-GLOBAL_STD ?= gnu11
+# Глобальный тип сборки
+ifdef RELEASE
+	BUILD_TYPE := release
+else
+	BUILD_TYPE := debug
+endif # ifdef RELEASE
+
+ifdef COVERAGE
+	BUILD_TYPE := coverage
+endif
 
 # Загружаем предустановки
-include $(BUILD_ROOT)/utils/local-defaults.mk
+include $(BUILD_ROOT)/utils/defaults.mk
 
 # Вычисляем компилятор и параметры компиляции
 include $(BUILD_ROOT)/shaders/compiler.mk
 include $(BUILD_ROOT)/c/compiler.mk
 include $(BUILD_ROOT)/wasm/compiler.mk
 
-# Вычисляем цели для сборки
+# Вычисляем цели для сборки (библиотеки и приложение)
 include $(BUILD_ROOT)/utils/build-targets.mk
 
 # Вычисляем сумму файлов на основании запрошенных модулей

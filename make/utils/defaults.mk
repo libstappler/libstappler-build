@@ -18,27 +18,68 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+GLOBAL_STDXX ?= gnu++2a
+GLOBAL_STD ?= gnu11
+
 LOCAL_ROOT ?= .
 LOCAL_OUTDIR ?= stappler-build
 LOCAL_BUILD_SHARED ?= 1
 LOCAL_BUILD_STATIC ?= 1
 LOCAL_ANDROID_TARGET ?= application
 LOCAL_ANDROID_PLATFORM ?= android-24
+LOCAL_OPTIMIZATION ?= -Os
 
 ifdef BUILD_HOST
 LOCAL_INSTALL_DIR ?= $(LOCAL_OUTDIR)/host
-BUILD_OUTDIR := $(LOCAL_OUTDIR)/host
+BUILD_OUTDIR := $(LOCAL_OUTDIR)/host/$(BUILD_TYPE)
 endif
 
 ifdef BUILD_ANDROID
 LOCAL_INSTALL_DIR ?= $(LOCAL_OUTDIR)/android
-BUILD_OUTDIR := $(LOCAL_OUTDIR)/android
+BUILD_OUTDIR := $(LOCAL_OUTDIR)/android/$(BUILD_TYPE)
 endif
 
 ifdef BUILD_XWIN
 LOCAL_INSTALL_DIR ?= $(LOCAL_OUTDIR)/xwin
-BUILD_OUTDIR := $(LOCAL_OUTDIR)/xwin
+BUILD_OUTDIR := $(LOCAL_OUTDIR)/xwin/$(BUILD_TYPE)
 endif
 
 GLOBAL_ROOT := $(STAPPLER_ROOT)
 GLOBAL_OUTPUT := $(BUILD_OUTDIR)
+
+GLOBAL_RM ?= rm -f
+GLOBAL_CP ?= cp -f
+GLOBAL_MAKE ?= make
+GLOBAL_MKDIR ?= mkdir -p
+GLOBAL_AR ?= ar rcs
+
+# Проверяем хостовую систему, у Darwin нет опции -o для uname
+UNAME := $(shell uname)
+
+ifneq ($(UNAME),Darwin)
+	UNAME := $(shell uname -o)
+endif
+
+ifeq ($(findstring MSYS_NT,$(UNAME)),MSYS_NT)
+	UNAME := $(shell uname -o)
+endif
+
+UNAME_ARCH ?= $(shell uname -m)
+
+#
+# WebAssebmly
+#
+
+WIT_BINDGEN ?= wit-bindgen
+
+WASI_SDK ?= /opt/wasi-sdk
+WASI_SDK_CC ?= $(WASI_SDK)/bin/clang
+WASI_SDK_CXX ?= $(WASI_SDK)/bin/clang++
+WASI_THREADS ?= 1
+
+GLOBAL_WASM_OPTIMIZATION ?= -Os
+
+# Отладка WebAssembly фактически оснанавливает выполнение приложения
+# в ожидании подключения отладчика LLDB. Потому, это поведение необходимо
+# явно включать, оно не включается автоматически в отладочной форме приложения
+GLOBAL_WASM_DEBUG ?= 0

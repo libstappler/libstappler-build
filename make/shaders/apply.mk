@@ -43,22 +43,22 @@ BUILD_SHADERS_TARGET_INCLUDE := $(addprefix -I,$(BUILD_SHADERS_TARGET_INCLUDE_DI
 BUILD_SHADERS_INCLUDE = $(addprefix -I,$(realpath $(LOCAL_SHADERS_INCLUDE) $(TOOLKIT_SHADERS_INCLUDE)))
 
 define BUILD_SHADERS_compile_rule
-$(1) : $(subst $(BUILD_SHADERS_OUTDIR)/compiled,,$(1))
+$(1) : $(subst $(BUILD_SHADERS_OUTDIR)/compiled,,$(1)) $$(LOCAL_MAKEFILE)
 	$$(call sp_compile_glsl,$(1),$(subst $(BUILD_SHADERS_OUTDIR)/compiled,,$(1)),$(LOCAL_SHADERS_RULES))
 endef
 
 define BUILD_SHADERS_link_rule
-$(1) : $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(wildcard $(subst $(BUILD_SHADERS_OUTDIR)/linked,,$(1))/*))
+$(1) : $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(wildcard $(subst $(BUILD_SHADERS_OUTDIR)/linked,,$(1))/*)) $$(LOCAL_MAKEFILE)
 	$$(call sp_link_spirv)
 endef
 
 define BUILD_SHADERS_embed_rule
-$(addsuffix .h,$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(1))) : $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(1))
+$(addsuffix .h,$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded,$(1))) : $(addprefix $(BUILD_SHADERS_OUTDIR)/linked,$(1)) $$(LOCAL_MAKEFILE)
 	$$(call sp_embed_spirv)
 endef
 
 define BUILD_SHADERS_embed_single_rule
-$(addsuffix .h,$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded_files,$(1))) : $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(1))
+$(addsuffix .h,$(addprefix $(BUILD_SHADERS_OUTDIR)/embedded_files,$(1))) : $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(1)) $$(LOCAL_MAKEFILE)
 	$$(call sp_embed_spirv)
 endef
 

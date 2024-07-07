@@ -28,7 +28,7 @@ GLSLC ?= glslangValidator
 SPIRV_LINK ?= spirv-link
 endif
 
-BUILD_SHADERS_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(GLSLC))/$(BUILD_TYPE)
+BUILD_SHADERS_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(GLSLC))
 
 sp_compile_glsl = $(GLOBAL_QUIET_GLSLC) $(GLOBAL_MKDIR) $(dir $@); $(GLSLC) \
 	$(BUILD_SHADERS_INCLUDE) -DSP_GLSL=1 $(3) -V -o $(1) $(2) -e $(notdir $(basename $(1))) --sep main

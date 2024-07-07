@@ -18,17 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-WIT_BINDGEN ?= wit-bindgen
-
-WASI_SDK ?= /opt/wasi-sdk
-WASI_SDK_CC ?= $(WASI_SDK)/bin/clang
-WASI_SDK_CXX ?= $(WASI_SDK)/bin/clang++
-WASI_THREADS ?= 1
-
-GLOBAL_WASM_OPTIMIZATION ?= -Os
-
-BUILD_WIT_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(WIT_BINDGEN))/$(BUILD_TYPE)
-BUILD_WASM_OUTDIR := $(BUILD_OUTDIR)/wasm/$(notdir $(WASI_SDK_CC))/$(BUILD_TYPE)
+BUILD_WIT_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(WIT_BINDGEN))
+BUILD_WASM_OUTDIR := $(BUILD_OUTDIR)/wasm/$(notdir $(WASI_SDK_CC))
 
 ifeq ($(WASI_THREADS),1)
 BUILD_WASM_CFLAGS_DEFAULT := -DSTAPPLER -DWASM -mreference-types -mbulk-memory -msign-ext -mmultivalue -mtail-call \
@@ -71,13 +62,6 @@ sp_toolkit_wit_list = $(foreach f,\
 	$(abspath $(filter /%,$(filter %.wit,$(2)))) \
 	$(abspath $(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter %.wit,$(2))))) \
 ,$(call sp_unconvert_path,$(f)))
-
-sp_toolkit_wit_list_abs = $(foreach f,$(abspath\
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.wit')) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) -name '*.wit')) \
-	$(filter /%,$(filter %.wit,$(2))) \
-	$(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter %.wit,$(2)))) \
-),$(call sp_unconvert_path,$(f)))
 
 sp_local_wit_list = \
 	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.wit')) \

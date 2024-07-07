@@ -25,7 +25,7 @@ include $(1)
 endef
 
 LOCAL_MODULES_PATHS += $(BUILD_ROOT)/../module/module.mk
-LOCAL_MODULES += stappler_build_module
+LOCAL_MODULES += stappler_build_debug_module
 
 $(foreach include,$(LOCAL_MODULES_PATHS),$(eval $(call include_module_path,$(include))))
 
@@ -42,8 +42,15 @@ endef
 
 define merge_module =
 TOOLKIT_PRECOMPILED_HEADERS += $($(1)_PRECOMPILED_HEADERS)
-TOOLKIT_MODULE_FLAGS += $($(1)_FLAGS) -D$(1)
-TOOLKIT_FLAGS += $($(1)_FLAGS) -D$(1)
+TOOLKIT_GENERAL_CFLAGS += $($(1)_FLAGS) $($(1)_GENERAL_CFLAGS) -D$(1)
+TOOLKIT_GENERAL_CXXFLAGS += $($(1)_FLAGS) $($(1)_GENERAL_CXXFLAGS) -D$(1)
+TOOLKIT_GENERAL_LDFLAGS += $($(1)_GENERAL_LDFLAGS)
+TOOLKIT_LIB_CFLAGS += $($(1)_LIB_CFLAGS)
+TOOLKIT_LIB_CXXFLAGS += $($(1)_LIB_CXXFLAGS)
+TOOLKIT_LIB_LDFLAGS += $($(1)_LIB_LDFLAGS)
+TOOLKIT_EXEC_CFLAGS += $($(1)_EXEC_CFLAGS)
+TOOLKIT_EXEC_CXXFLAGS += $($(1)_EXEC_CXXFLAGS)
+TOOLKIT_EXEC_LDFLAGS += $($(1)_EXEC_LDFLAGS)
 TOOLKIT_LIBS += $($(1)_LIBS)
 TOOLKIT_SRCS_DIRS += $($(1)_SRCS_DIRS)
 TOOLKIT_SRCS_OBJS += $($(1)_SRCS_OBJS)
@@ -71,3 +78,13 @@ $(info Enabled modules: $(GLOBAL_MODULES))
 
 $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$(eval $(call merge_module,$(module_name),$(module)))))
+
+	
+TOOLKIT_MODULES := $(BUILD_С_OUTDIR)/modules.info
+TOOLKIT_CACHED_MODULES := $(shell cat $(TOOLKIT_MODULES) 2> /dev/null)
+
+ifneq ($(LOCAL_MODULES),$(TOOLKIT_CACHED_MODULES))
+$(info Modules was updated)
+$(shell $(GLOBAL_MKDIR) $(BUILD_С_OUTDIR); echo '$(LOCAL_MODULES)' > $(TOOLKIT_MODULES))
+endif
+	

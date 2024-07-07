@@ -20,7 +20,7 @@
 
 # Функция счётчика прогресса
 ifeq (4.1,$(firstword $(sort $(MAKE_VERSION) 4.1)))
-sp_counter_text = [$(BUILD_LIBRARY): $$(($(BUILD_CURRENT_COUNTER)*100/$(BUILD_FILES_COUNTER)))% $(BUILD_CURRENT_COUNTER)/$(BUILD_FILES_COUNTER)]
+sp_counter_text = [$(BUILD_TARGET): $$(($(BUILD_CURRENT_COUNTER)*100/$(BUILD_FILES_COUNTER)))% $(BUILD_CURRENT_COUNTER)/$(BUILD_FILES_COUNTER)]
 else
 sp_counter_text = 
 endif
@@ -54,15 +54,20 @@ endif
 # Progress counter
 BUILD_CURRENT_COUNTER ?= 1
 BUILD_FILES_COUNTER ?= 1
-BUILD_COUNTER := 0
+BUILD_LIB_COUNTER := 0
+BUILD_EXEC_COUNTER := 0
+BUILD_TARGET :=
 
-define BUILD_template =
-$(eval BUILD_COUNTER=$(shell echo $$(($(BUILD_COUNTER)+1))))
-$(1):BUILD_CURRENT_COUNTER:=$(BUILD_COUNTER)
-$(1):BUILD_FILES_COUNTER := $(BUILD_WORDS)
-ifdef LOCAL_EXECUTABLE
-$(1):BUILD_LIBRARY := $(notdir $(LOCAL_EXECUTABLE))
-else
-$(1):BUILD_LIBRARY := $(notdir $(LOCAL_LIBRARY))
-endif
+define BUILD_LIB_template =
+$(eval BUILD_LIB_COUNTER=$(shell echo $$(($(BUILD_LIB_COUNTER)+1))))
+$(1):BUILD_CURRENT_COUNTER:=$(BUILD_LIB_COUNTER)
+$(1):BUILD_FILES_COUNTER := $(3)
+$(1):BUILD_TARGET := $(2)
+endef
+
+define BUILD_EXEC_template =
+$(eval BUILD_EXEC_COUNTER=$(shell echo $$(($(BUILD_EXEC_COUNTER)+1))))
+$(1):BUILD_CURRENT_COUNTER:=$(BUILD_EXEC_COUNTER)
+$(1):BUILD_FILES_COUNTER := $(3)
+$(1):BUILD_TARGET := $(2)
 endef
