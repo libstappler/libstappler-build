@@ -37,7 +37,7 @@ GLOBAL_CC := ndk-build
 GLOBAL_CPP := ndk-build
 
 ANDROID_EXPORT_PREFIX ?= $(GLOBAL_ROOT)
-ANDROID_EXPORT_PATH := $(if $(LOCAL_ROOT),,$(GLOBAL_ROOT)/)$(BUILD_OUTDIR)
+ANDROID_EXPORT_PATH := $(if $(LOCAL_ROOT),,$(GLOBAL_ROOT)/)$(LOCAL_OUTDIR)/android
 
 android_lib_list = \
 	$(foreach lib,$(filter %.a,$(1)),$(2)_$(basename $(subst -,_,$(notdir $(lib))))_generic)
@@ -56,7 +56,7 @@ $(ANDROID_EXPORT_PATH)/Android.mk.tmp:
 	@echo 'LOCAL_CFLAGS := -DANDROID -DUSE_FILE32API -DSTAPPLER $(TOOLKIT_GENERAL_CFLAGS) $(TOOLKIT_LIB_CFLAGS)' >> $@
 	@echo 'LOCAL_EXPORT_LDLIBS := -llog -lz -landroid' >> $@
 	@echo -n 'LOCAL_SRC_FILES :=' >> $@
-	@for file in $(realpath $(BUILD_SRCS)) $(TOOLKIT_SRCS); do \
+	@for file in $(realpath $(BUILD_LIB_SRCS)); do \
 		printf " \\\\\n\t$$file" >> $@; \
 	done
 	@echo '' >> $@

@@ -18,14 +18,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# to use without Stappler SDK, just watch for root module list
 LOCAL_MODULES_PATHS ?= $(GLOBAL_ROOT)/modules.mk
 
 define include_module_path =
 include $(1)
 endef
 
+# inject debug module
 LOCAL_MODULES_PATHS += $(BUILD_ROOT)/../module/module.mk
 LOCAL_MODULES += stappler_build_debug_module
+
+ifeq ($(LINUX),1)
+# Special threatment for Alpine, replace execinfo.h with full libbacktrace
+LOCAL_MODULES +=  $(if $(strip $(shell cat /etc/os-release | grep "Alpine Linux")),stappler_backtrace)
+endif
 
 $(foreach include,$(LOCAL_MODULES_PATHS),$(eval $(call include_module_path,$(include))))
 

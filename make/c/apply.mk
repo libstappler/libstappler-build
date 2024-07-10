@@ -129,33 +129,37 @@ BUILD_SRCS := $(call sp_local_source_list,$(LOCAL_SRCS_DIRS),$(LOCAL_SRCS_OBJS))
 
 BUILD_MAIN_SRC := $(if $(LOCAL_MAIN),$(realpath $(addprefix $(LOCAL_ROOT)/,$(LOCAL_MAIN))))
 
-BUILD_ALL_SRCS := \
+BUILD_EXEC_SRCS := \
 	$(TOOLKIT_SRCS) \
 	$(BUILD_SRCS) \
 	$(BUILD_MAIN_SRC)
 
+BUILD_LIB_SRCS := \
+	$(TOOLKIT_SRCS) \
+	$(BUILD_SRCS)
+
 $(foreach target,\
-	$(sort $(filter %.c,$(BUILD_ALL_SRCS))),\
+	$(sort $(filter %.c,$(BUILD_LIB_SRCS))),\
 	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CFLAGS))))
 
 $(foreach target,\
-	$(sort $(filter %.cpp,$(BUILD_ALL_SRCS))),\
+	$(sort $(filter %.cpp,$(BUILD_LIB_SRCS))),\
 	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
 
 $(foreach target,\
-	$(sort $(filter %.mm,$(BUILD_ALL_SRCS))),\
+	$(sort $(filter %.mm,$(BUILD_LIB_SRCS))),\
 	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
 
 $(foreach target,\
-	$(sort $(filter %.c,$(BUILD_ALL_SRCS))),\
+	$(sort $(filter %.c,$(BUILD_EXEC_SRCS))),\
 	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CFLAGS))))
 
 $(foreach target,\
-	$(sort $(filter %.cpp,$(BUILD_ALL_SRCS))),\
+	$(sort $(filter %.cpp,$(BUILD_EXEC_SRCS))),\
 	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
 
 $(foreach target,\
-	$(sort $(filter %.mm,$(BUILD_ALL_SRCS))),\
+	$(sort $(filter %.mm,$(BUILD_EXEC_SRCS))),\
 	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
 
 # Список объектных файлов, относящихся к фреймворку
