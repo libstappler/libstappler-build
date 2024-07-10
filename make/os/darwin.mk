@@ -18,29 +18,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-ifeq ($(UNAME),Darwin)
-
-ifndef MACOS_ARCH
-MACOS_ARCH := $(shell arch)
-endif
-
 OS_VERSION_TARGET := 11.0
 
-OSTYPE_PREBUILT_PATH := libs/mac/$(MACOS_ARCH)/lib
-OSTYPE_INCLUDE :=  libs/mac/$(MACOS_ARCH)/include
-OSTYPE_CFLAGS := -DMACOS -DUSE_FILE32API -Wall -fPIC -Wno-missing-braces \
-		-Wno-gnu-string-literal-operator-template -mmacosx-version-min=$(OS_VERSION_TARGET)
-OSTYPE_CPPFLAGS :=  -frtti -Wno-unneeded-internal-declaration
+MACOS := 1
+
+OSTYPE_ARCH ?= $(STAPPLER_ARCH)
+OSTYPE_DEPS := deps/mac/$(OSTYPE_ARCH)
+OSTYPE_PREBUILT_PATH := $(OSTYPE_DEPS)/lib
+OSTYPE_INCLUDE := $(OSTYPE_DEPS)/include
+
+OSTYPE_GENERAL_CFLAGS := -DMACOS -DUSE_FILE32API -Wall -mmacosx-version-min=$(OS_VERSION_TARGET)
+OSTYPE_LIB_CFLAGS := -fPIC -DPIC
+OSTYPE_EXEC_CFLAGS :=
+
+OSTYPE_GENERAL_CXXFLAGS :=  -DMACOS -DUSE_FILE32API -Wall -frtti -mmacosx-version-min=$(OS_VERSION_TARGET) \
+	-Wno-unqualified-std-cast-call -Wno-overloaded-virtual
+OSTYPE_LIB_CXXFLAGS := -fPIC -DPIC
+OSTYPE_EXEC_CXXFLAGS :=
+
+OSTYPE_GENERAL_LDFLAGS := -mmacosx-version-min=$(OS_VERSION_TARGET)
+OSTYPE_EXEC_LDFLAGS := 
+OSTYPE_LIB_LDFLAGS := -rdynamic -Wl,--exclude-libs,ALL
 
 OSTYPE_EXEC_SUFFIX :=
 OSTYPE_DSO_SUFFIX := .lib
 OSTYPE_LIB_SUFFIX := .a
 OSTYPE_LIB_PREFIX := lib
 
-OSTYPE_LDFLAGS := -mmacosx-version-min=$(OS_VERSION_TARGET)
-OSTYPE_STANDALONE_LDFLAGS := $(OSTYPE_LDFLAGS)
-OSTYPE_EXEC_FLAGS := -mmacosx-version-min=$(OS_VERSION_TARGET)
-CLANG := 1
 BUILD_OBJC := 1
 RESOLVE_LIBS_REALPATH := 1
 
@@ -71,5 +75,3 @@ mac-export: $(OSTYPE_XCCONFIG_DIR)/macos.projectconfig.xcconfig.tmp
 	fi
 
 .PHONY: mac-export
-
-endif
