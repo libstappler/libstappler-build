@@ -20,12 +20,6 @@
 
 # Функции для вывода правил компиляции
 
-ifdef MSYS
-sp_os_path = $(shell cygpath -u $(abspath $(1)))
-else
-sp_os_path = $(1)
-endif
-
 ifeq ($(CLANG),1)
 ifdef MSYS
 # Записываем имя зависимости в формате unix, иначе make не сможет её сопоставить

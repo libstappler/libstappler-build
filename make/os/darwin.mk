@@ -27,12 +27,13 @@ OSTYPE_DEPS := deps/mac/$(OSTYPE_ARCH)
 OSTYPE_PREBUILT_PATH := $(OSTYPE_DEPS)/lib
 OSTYPE_INCLUDE := $(OSTYPE_DEPS)/include
 
-OSTYPE_GENERAL_CFLAGS := -DMACOS -DUSE_FILE32API -Wall -mmacosx-version-min=$(OS_VERSION_TARGET)
+OSTYPE_GENERAL_CFLAGS := -DMACOS -DUSE_FILE32API -Wall -mmacosx-version-min=$(OS_VERSION_TARGET) \
+	-Wnullability-completeness-on-arrays
 OSTYPE_LIB_CFLAGS := -fPIC -DPIC
 OSTYPE_EXEC_CFLAGS :=
 
 OSTYPE_GENERAL_CXXFLAGS :=  -DMACOS -DUSE_FILE32API -Wall -frtti -mmacosx-version-min=$(OS_VERSION_TARGET) \
-	-Wno-unqualified-std-cast-call -Wno-overloaded-virtual
+	-Wno-unqualified-std-cast-call -Wno-overloaded-virtual -Wno-nullability-completeness-on-arrays
 OSTYPE_LIB_CXXFLAGS := -fPIC -DPIC
 OSTYPE_EXEC_CXXFLAGS :=
 

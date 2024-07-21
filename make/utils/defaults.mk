@@ -83,3 +83,9 @@ GLOBAL_WASM_OPTIMIZATION ?= -Os
 # в ожидании подключения отладчика LLDB. Потому, это поведение необходимо
 # явно включать, оно не включается автоматически в отладочной форме приложения
 GLOBAL_WASM_DEBUG ?= 0
+
+ifdef MSYS
+sp_os_path = $(shell cygpath -u $(abspath $(1)))
+else
+sp_os_path = $(1)
+endif
