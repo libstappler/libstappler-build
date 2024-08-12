@@ -33,7 +33,7 @@ BUILD_SHADERS_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(GLSLC))
 sp_compile_glsl = $(GLOBAL_QUIET_GLSLC) $(GLOBAL_MKDIR) $(dir $@); $(GLSLC) \
 	$(BUILD_SHADERS_FLAGS) $(3) -V -o $(1) $(2) -e $(notdir $(basename $(1))) --sep main
 
-sp_link_spirv = $(GLOBAL_QUIET_SPIRV_LINK) $(GLOBAL_MKDIR) $(dir $@); $(SPIRV_LINK) \
+sp_link_spirv = $(GLOBAL_QUIET_SPIRV_LINK) $(GLOBAL_MKDIR) $(dir $@); $(SPIRV_LINK) --target-env vulkan1.0 \
 	-o $@ $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(wildcard $(subst $(BUILD_SHADERS_OUTDIR)/linked,,$@)/*))
 
 sp_embed_spirv = $(GLOBAL_QUIET_SPIRV_EMBED) $(GLOBAL_MKDIR) $(dir $@); \
