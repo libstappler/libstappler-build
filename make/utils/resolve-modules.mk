@@ -25,8 +25,16 @@ define include_module_path =
 include $(1)
 endef
 
+define include_module_source =
+TOOLKIT_MODULE_PATH := $(1)
+include $(1)
+endef
+
 # inject debug module
+ifndef SHARED_PREFIX
 LOCAL_MODULES_PATHS += $(BUILD_ROOT)/../module/module.mk
+endif # SHARED_PREFIX
+
 LOCAL_MODULES += stappler_build_debug_module
 
 ifeq ($(LINUX),1)
@@ -34,7 +42,16 @@ ifeq ($(LINUX),1)
 LOCAL_MODULES +=  $(if $(strip $(shell cat /etc/os-release | grep "Alpine Linux")),stappler_backtrace)
 endif
 
+TOOLKIT_MODULE_LIST :=
+
+ifdef SHARED_PREFIX
+include $(BUILD_ROOT)/shared-module-list.mk
+$(foreach include,$(filter-out $(STAPPLER_ROOT)/%,$(LOCAL_MODULES_PATHS)),$(eval $(call include_module_path,$(include))))
+else
 $(foreach include,$(LOCAL_MODULES_PATHS),$(eval $(call include_module_path,$(include))))
+endif
+
+$(foreach include,$(TOOLKIT_MODULE_LIST),$(eval $(call include_module_source,$(include))))
 
 define emplace_module =
 $(eval LOCAL_MODULES = $(LOCAL_MODULES) $(1))
@@ -45,7 +62,11 @@ define follow_deps_module =
 $(foreach dep,$($(1)_DEPENDS_ON),\
 	$(eval $(call emplace_module,$(dep))) \
 )
-endef
+endef # follow_deps_module
+
+define define_consumed =
+$(2)_CONSUMED_BY := $(1)
+endef # define_consumed
 
 define merge_module =
 TOOLKIT_PRECOMPILED_HEADERS += $($(1)_PRECOMPILED_HEADERS)
@@ -69,7 +90,9 @@ TOOLKIT_SRCS_DIRS_WITH_SHADERS += $(if $($(1)_SHADERS_DIR),$($(1)_SRCS_DIRS))
 TOOLKIT_SRCS_OBJS_WITH_SHADERS += $(if $($(1)_SHADERS_DIR),$($(1)_SRCS_OBJS))
 TOOLKIT_WASM_DIRS += $($(1)_WASM_DIRS)
 TOOLKIT_WASM_OBJS += $($(1)_WASM_OBJS)
-endef
+TOOLKIT_SHARED_CONSUME += $($(1)_SHARED_CONSUME)
+$(foreach module,$($(1)_SHARED_CONSUME),$(eval $(call define_consumed,$(2),$(MODULE_$(module)))))
+endef # merge_module
 
 reverse_modules = $(if $(wordlist 2,2,$(1)),$(call reverse_modules,$(wordlist 2,$(words $(1)),$(1))) $(firstword $(1)),$(1))
 unique_modules = $(if $1,$(firstword $1) $(call unique_modules,$(filter-out $(firstword $1),$1)))
@@ -86,7 +109,6 @@ $(info Enabled modules: $(GLOBAL_MODULES))
 $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$(eval $(call merge_module,$(module_name),$(module)))))
 
-	
 TOOLKIT_MODULES := $(BUILD_С_OUTDIR)/modules.info
 TOOLKIT_CACHED_MODULES := $(shell cat $(TOOLKIT_MODULES) 2> /dev/null)
 

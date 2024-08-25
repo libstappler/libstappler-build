@@ -21,9 +21,16 @@
 LINUX := 1
 
 OSTYPE_ARCH ?= $(STAPPLER_ARCH)
+
+ifndef BUILD_SHARED
 OSTYPE_DEPS := deps/linux/$(OSTYPE_ARCH)
 OSTYPE_PREBUILT_PATH := $(OSTYPE_DEPS)/lib
 OSTYPE_INCLUDE := $(OSTYPE_DEPS)/include
+else
+OSTYPE_DEPS :=
+OSTYPE_PREBUILT_PATH :=
+OSTYPE_INCLUDE :=
+endif
 
 OSTYPE_EXEC_SUFFIX :=
 OSTYPE_DSO_SUFFIX := .so
@@ -79,9 +86,8 @@ export PATH = $(LOCAL_PATH)
 endif
 endif # ($(STAPPLER_ARCH),e2k)
 
+ifdef BUILD_SHARED
 
-ifeq ($(STAPPLER_ARCH),aarch64)
+OSTYPE_LIB_LDFLAGS += -Wl,-z,defs
 
-
-
-endif # ($(STAPPLER_ARCH),aarch64)
+endif # BUILD_SHARED

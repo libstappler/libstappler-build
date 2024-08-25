@@ -20,19 +20,26 @@
 
 # Список библиотек для включения в конечное приложение
 # Для Android в пути к библоитеке используется символ-заместитель для архитектуры, потому используется abspath вместо realpath
+ifndef BUILD_SHARED
 ifdef ANDROID
 TOOLKIT_LIBS := $(call sp_toolkit_resolve_libs, $(abspath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH))), $(TOOLKIT_LIBS)) $(LDFLAGS)
 else
-TOOLKIT_LIBS := $(call sp_toolkit_resolve_libs, $(realpath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH))), $(TOOLKIT_LIBS)) $(LDFLAGS)
-endif
+RPATH_PREFIX := -Wl,-rpath,
+TOOLKIT_LIBS := \
+	$(if $(BUILD_HOST),$(addprefix -L,$(SHARED_LIBDIR)) $(addprefix $(RPATH_PREFIX),$(SHARED_RPATH))) \
+	$(call sp_toolkit_resolve_libs, $(if $(SHARED_LIBDIR),,$(realpath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH)))), $(TOOLKIT_LIBS)) $(LDFLAGS)
+endif # ANDROID
+else
+TOOLKIT_LIBS :=
+endif # BUILD_SHARED
 
 # Список полных путей к прекомпилируемым заголовкам
 TOOLKIT_PRECOMPILED_HEADERS := $(call sp_toolkit_resolve_prefix_files,$(TOOLKIT_PRECOMPILED_HEADERS))
 
 # Список полных путей к копиям прекомпилируемых заголовков в директории сборки
 # Копирование необходимо, чтобы обеспечить приоритет включения предкомпилируемых заголовков
-TOOLKIT_LIB_H_GCH := $(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_PRECOMPILED_HEADERS))
-TOOLKIT_EXEC_H_GCH := $(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_PRECOMPILED_HEADERS))
+TOOLKIT_LIB_H_GCH := $(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/lib_objs,$(TOOLKIT_PRECOMPILED_HEADERS))
+TOOLKIT_EXEC_H_GCH := $(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_PRECOMPILED_HEADERS))
 
 # Список финальных предкомпилированных заголовков
 TOOLKIT_LIB_GCH := $(addsuffix .gch,$(TOOLKIT_LIB_H_GCH))
@@ -106,12 +113,12 @@ BUILD_LIB_LDFLAGS := \
 
 $(foreach target,$(TOOLKIT_PRECOMPILED_HEADERS),\
 	$(eval $(call BUILD_include_rule,$(target),\
-		$(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/lib,$(target)))\
+		$(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/lib_objs,$(target)))\
 	))
 
 $(foreach target,$(TOOLKIT_PRECOMPILED_HEADERS),\
 	$(eval $(call BUILD_include_rule,$(target),\
-		$(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/exec,$(target)))\
+		$(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/exec_objs,$(target)))\
 	))
 
 $(foreach target,$(TOOLKIT_LIB_GCH),$(eval $(call BUILD_gch_rule,$(target),$(BUILD_LIB_CXXFLAGS))))
@@ -140,37 +147,37 @@ BUILD_LIB_SRCS := \
 
 $(foreach target,\
 	$(sort $(filter %.c,$(BUILD_LIB_SRCS))),\
-	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CFLAGS))))
+	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/lib_objs,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CFLAGS))))
 
 $(foreach target,\
 	$(sort $(filter %.cpp,$(BUILD_LIB_SRCS))),\
-	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
+	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/lib_objs,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
 
 $(foreach target,\
 	$(sort $(filter %.mm,$(BUILD_LIB_SRCS))),\
-	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
+	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/lib_objs,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
 
 $(foreach target,\
 	$(sort $(filter %.c,$(BUILD_EXEC_SRCS))),\
-	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CFLAGS))))
+	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CFLAGS))))
 
 $(foreach target,\
 	$(sort $(filter %.cpp,$(BUILD_EXEC_SRCS))),\
-	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
+	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
 
 $(foreach target,\
 	$(sort $(filter %.mm,$(BUILD_EXEC_SRCS))),\
-	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
+	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
 
 # Список объектных файлов, относящихся к фреймворку
-TOOLKIT_LIB_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/lib,$(TOOLKIT_SRCS))
-TOOLKIT_EXEC_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/exec,$(TOOLKIT_SRCS))
+TOOLKIT_LIB_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/lib_objs,$(TOOLKIT_SRCS))
+TOOLKIT_EXEC_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_SRCS))
 
 # Список объектных файлов приложения
-BUILD_LIB_OBJS := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/lib,$(BUILD_SRCS))
-BUILD_EXEC_OBJS := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/exec,$(BUILD_SRCS))
+BUILD_LIB_OBJS := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/lib_objs,$(BUILD_SRCS))
+BUILD_EXEC_OBJS := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(BUILD_SRCS))
 
-BUILD_MAIN_OBJ := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/exec,$(BUILD_MAIN_SRC))
+BUILD_MAIN_OBJ := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(BUILD_MAIN_SRC))
 
 # Список терминов для подсчёта прогресса
 BUILD_LIB_WORDS := $(words $(TOOLKIT_LIB_GCH) $(BUILD_LIB_OBJS) $(TOOLKIT_LIB_OBJS))

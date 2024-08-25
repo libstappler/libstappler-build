@@ -34,6 +34,9 @@ ifdef COVERAGE
 	BUILD_TYPE := coverage
 endif
 
+# Загружаем конфигурацию разделяемого окружения ОС
+-include $(BUILD_ROOT)/shared-config.mk
+
 # Загружаем предустановки
 include $(BUILD_ROOT)/utils/defaults.mk
 
