@@ -91,6 +91,10 @@ TOOLKIT_SRCS_OBJS_WITH_SHADERS += $(if $($(1)_SHADERS_DIR),$($(1)_SRCS_OBJS))
 TOOLKIT_WASM_DIRS += $($(1)_WASM_DIRS)
 TOOLKIT_WASM_OBJS += $($(1)_WASM_OBJS)
 TOOLKIT_SHARED_CONSUME += $($(1)_SHARED_CONSUME)
+ifdef BUILD_SHARED
+TOOLKIT_GENERAL_CFLAGS += $(foreach name,$($(1)_SHARED_PKGCONFIG),$(shell pkg-config --cflags-only-I $(name)))
+TOOLKIT_GENERAL_CXXFLAGS += $(foreach name,$($(1)_SHARED_PKGCONFIG),$(shell pkg-config --cflags-only-I $(name)))
+endif
 $(foreach module,$($(1)_SHARED_CONSUME),$(eval $(call define_consumed,$(2),$(MODULE_$(module)))))
 endef # merge_module
 

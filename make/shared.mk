@@ -123,7 +123,7 @@ $(1): $(BUILD_TARGET_MAKEFILES)
 	@echo '$(2)_INCLUDES_DIRS :=' >> $(1)
 	@echo '$(2)_INCLUDES_OBJS := $(sort $(dir $(subst $(BUILD_STAPPLER_ROOT)/,$$$$(SHARED_INCLUDEDIR)/$(LOCAL_LIBRARY)/,$(3))))' >> $(1)
 	@echo '$(2)_LIBS := $(addprefix -l, $(subst _,-,$(4)))' >> $(1)
-	@echo '$(2)_DEPENDS_ON := $(filter-out $(TOOLKIT_SHARED_CONSUME),$($(2)_DEPENDS_ON))' >> $(1)
+	@echo '$(2)_DEPENDS_ON := $(filter-out $(TOOLKIT_SHARED_CONSUME),$($(2)_DEPENDS_ON) $($(2)_SHARED_DEPENDS_ON))' >> $(1)
 	@echo '$(addprefix MODULE_,$(subst .mk,,$(notdir $(1)))) := $(2)' >> $(1)
 endef # make_rule_module_header
 
@@ -201,7 +201,7 @@ $(eval $(call compile_module,\
 	$(call shared_make_library_path,$(2)),\
 	$($(1)_SRCS_DIRS),\
 	$($(1)_SRCS_OBJS),\
-	$($(1)_DEPENDS_ON),\
+	$($(1)_DEPENDS_ON) $($(1)_SHARED_DEPENDS_ON),\
 	$($(1)_SHARED_CONSUME),\
 	$($(1)_LIBS_SHARED) $(call shared_consume_libs,$($(1)_SHARED_CONSUME)),\
 	$(2)\
