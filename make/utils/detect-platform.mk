@@ -58,4 +58,5 @@ sp_detect_platform = \
 	$(if $(filter host,$(1)),$(STAPPLER_PLATFORM)) \
 	$(if $(filter android,$(1)),ANDROID=1) \
 	$(if $(filter ios,$(1)),IOS=1) \
-	$(if $(filter xwin,$(1)),XWIN=1 WIN32=1)
+	$(if $(filter xwin,$(1)),XWIN=1 WIN32=1) \
+	$(if $(SHARED_PREFIX),SHARED_PREFIX=$(SHARED_PREFIX))

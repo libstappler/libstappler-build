@@ -30,6 +30,11 @@ TOOLKIT_MODULE_PATH := $(1)
 include $(1)
 endef
 
+define include_module_optional =
+$(info Optional module "$(1)": $(if $(MODULE_$(1)),<found>,<not found>))
+LOCAL_MODULES += $(if $(MODULE_$(1)),$(1))
+endef
+
 # inject debug module
 ifndef SHARED_PREFIX
 LOCAL_MODULES_PATHS += $(BUILD_ROOT)/../module/module.mk
@@ -53,13 +58,15 @@ endif
 
 $(foreach include,$(TOOLKIT_MODULE_LIST),$(eval $(call include_module_source,$(include))))
 
+$(foreach module,$(LOCAL_MODULES_OPTIONAL),$(eval $(call include_module_optional,$(module))))
+
 define emplace_module =
 $(eval LOCAL_MODULES = $(LOCAL_MODULES) $(1))
 $(eval $(call follow_deps_module,$(MODULE_$(1))))
 endef
 
 define follow_deps_module =
-$(foreach dep,$($(1)_DEPENDS_ON),\
+$(foreach dep,$(filter-out $(LOCAL_MODULES),$($(1)_DEPENDS_ON)),\
 	$(eval $(call emplace_module,$(dep))) \
 )
 endef # follow_deps_module

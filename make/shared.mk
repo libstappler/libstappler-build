@@ -99,7 +99,7 @@ shared_make_library_flags = \
 	)
 
 shared_get_headers_list = \
-	$(wildcard $(addsuffix /*.h,$(call sp_toolkit_include_list,$(1),$(2))))
+	$(wildcard $(addsuffix /*.h,$(call sp_toolkit_include_list,$(1),$(2))) $(addsuffix /*.hpp,$(call sp_toolkit_include_list,$(1),$(2))))
 
 shared_consume_includes = \
 	$(foreach module,$(1),\
@@ -119,11 +119,11 @@ shared_get_target_location = \
 # 2 - object files to build
 # 3 - target libraries for dependencies
 # 4 - additional lib flags
-define make_rule_module =
+define make_rule_module_lib =
 $(1): $(2) $(3)
 	@$(GLOBAL_MKDIR) $(dir $(1))
 	$(GLOBAL_QUIET_LINK_SHARED) $(GLOBAL_CPP) -shared $(2) $(BUILD_LIB_LDFLAGS) $(4) -o $(1)
-endef # make_rule_module
+endef # make_rule_module_lib
 
 
 # 1 - source file
@@ -152,7 +152,7 @@ $(1): $(BUILD_TARGET_MAKEFILES)
 	@echo '$(2)_INCLUDES_DIRS :=' >> $(1)
 	@echo '$(2)_INCLUDES_OBJS := $(sort $(dir $(subst $(BUILD_STAPPLER_ROOT)/,$$$$(SHARED_INCLUDEDIR)/$(LOCAL_LIBRARY)/,$(3))))' >> $(1)
 	@echo '$(2)_LIBS := $(addprefix -l, $(subst _,-,$(4)))' >> $(1)
-	@echo '$(2)_DEPENDS_ON := $(filter-out $(TOOLKIT_SHARED_CONSUME),$($(2)_DEPENDS_ON) $($(2)_SHARED_DEPENDS_ON))' >> $(1)
+	@echo '$(2)_DEPENDS_ON := $($(2)_DEPENDS_ON) $($(2)_SHARED_DEPENDS_ON)' >> $(1)
 	@echo '$(addprefix MODULE_,$(subst .mk,,$(notdir $(1)))) := $(2)' >> $(1)
 endef # make_rule_module_header
 
@@ -201,7 +201,7 @@ define compile_module =
 
 BUILD_SHARED_LIBS += $(1)
 
-$(eval $(call make_rule_module,\
+$(eval $(call make_rule_module_lib,\
 	$(1), \
 		$(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/lib_objs,$(call sp_toolkit_source_list,$(2),$(3))) \
 		$(call shared_consume_modules,$(5)), \
@@ -236,7 +236,7 @@ $(eval $(call compile_module,\
 	$(2)\
 ))
 $(eval $(call compile_includes,
-	$($(1)_INCLUDES_DIRS),\
+	$($(1)_INCLUDES_DIRS) $($(1)_SHARED_COPY_INCLUDES),\
 	$($(1)_INCLUDES_OBJS), \
 	$($(1)_SHARED_CONSUME) \
 ))

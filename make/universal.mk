@@ -28,6 +28,9 @@ ifndef STAPPLER_TARGET
 
 .DEFAULT_GOAL := host
 
+# Загружаем конфигурацию разделяемого окружения ОС
+-include $(BUILD_ROOT)/shared-config.mk
+
 include $(BUILD_ROOT)/utils/detect-platform.mk
 
 host: host-debug
