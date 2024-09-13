@@ -50,7 +50,7 @@ endif
 TOOLKIT_MODULE_LIST :=
 
 ifdef SHARED_PREFIX
-include $(BUILD_ROOT)/shared-module-list.mk
+TOOLKIT_MODULE_LIST += $(wildcard $(BUILD_ROOT)/modules/*.mk)
 $(foreach include,$(filter-out $(STAPPLER_ROOT)/%,$(LOCAL_MODULES_PATHS)),$(eval $(call include_module_path,$(include))))
 else
 $(foreach include,$(LOCAL_MODULES_PATHS),$(eval $(call include_module_path,$(include))))
