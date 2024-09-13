@@ -37,4 +37,4 @@ sp_link_spirv = $(GLOBAL_QUIET_SPIRV_LINK) $(GLOBAL_MKDIR) $(dir $@); $(SPIRV_LI
 	-o $@ $(addprefix $(BUILD_SHADERS_OUTDIR)/compiled,$(wildcard $(subst $(BUILD_SHADERS_OUTDIR)/linked,,$@)/*))
 
 sp_embed_spirv = $(GLOBAL_QUIET_SPIRV_EMBED) $(GLOBAL_MKDIR) $(dir $@); \
-	cd $(dir $^); xxd -i $(notdir $<) $(abspath $@).tmp; echo '///@ SP_EXCLUDE' | cat - $(abspath $@).tmp > $(abspath $@); rm $(abspath $@).tmp
+	cd $(dir $<); xxd -i $(notdir $<) $(abspath $@).tmp; echo '///@ SP_EXCLUDE' | cat - $(abspath $@).tmp > $(abspath $@); rm $(abspath $@).tmp
