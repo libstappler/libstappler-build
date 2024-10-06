@@ -41,13 +41,15 @@ License:        MIT
 URL:            https://stappler.dev/
 Source0:        %name-%version.tar
 
-BuildRequires:  make gcc-c++
+BuildRequires:  make gcc-c++ xxd
 BuildRequires:  libgif-devel libjpeg-devel libwebp-devel libpng-devel
 BuildRequires:  libbrotli-devel libidn2-devel libssl-devel libcurl-devel
 BuildRequires:  libsqlite3-devel libfreetype-devel libzip-devel
 BuildRequires:  libxkbcommon-devel libxkbcommon-x11-devel libxcbutil-keysyms-devel
 BuildRequires:  vulkan-headers
 BuildRequires:  glslang spirv-tools
+
+ExcludeArch:    %ix86
 
 %description
 Stappler SDK installation package
