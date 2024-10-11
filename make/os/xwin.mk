@@ -20,6 +20,8 @@
 
 OSTYPE_IS_WIN32 := 1
 
+verbose=1
+
 OSTYPE_ARCH ?= x86_64
 OSTYPE_ARCH_LOCAL ?= x64
 OSTYPE_TARGET ?= x86_64-windows-msvc
@@ -35,7 +37,7 @@ XWIN_PATH ?= deps/xwin
 XWIN_REPLACEMENTS_INCLUDE := $(XWIN_PATH)/../windows/replacements/include
 XWIN_REPLACEMENTS_BIN := $(XWIN_PATH)/../windows/replacements/bin
 
-XWIN_CRT_VERSION ?= Microsoft.VC.14.38.17.8.CRT
+XWIN_CRT_VERSION ?= Microsoft.VC.14.41.17.11.CRT
 
 XWIN_CRT_INCLUDE += \
 	$(XWIN_PATH)/splat/crt/include \
@@ -54,13 +56,7 @@ OSTYPE_DEPS := deps/windows/$(OSTYPE_ARCH)
 OSTYPE_PREBUILT_PATH := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/lib $(XWIN_CRT_LIB)
 OSTYPE_INCLUDE := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/include  $(XWIN_REPLACEMENTS_INCLUDE) $(XWIN_CRT_INCLUDE)
 OSTYPE_CFLAGS :=  -DWIN32 -DXWIN -Wall --target=$(OSTYPE_TARGET) -m64 -msse2 -D_MT \
-	-Wno-unqualified-std-cast-call -Wno-microsoft-include -Wno-nonportable-include-path
-OSTYPE_CPPFLAGS := -Wno-overloaded-virtual -frtti
-
-OSTYPE_EXEC_SUFFIX := .exe
-OSTYPE_DSO_SUFFIX := .dll
-OSTYPE_LIB_SUFFIX := .lib
-OSTYPE_LIB_PREFIX :=
+	-Wno-microsoft-include -Wno-unqualified-std-cast-call -Wno-vla-cxx-extension -DSP_STATIC_DEPS
 
 ifeq ($(RELEASE),1)
 OSTYPE_CFLAGS +=
@@ -70,9 +66,22 @@ OSTYPE_CFLAGS += -D_DEBUG -Xclang -gcodeview
 OSTYPE_LDFLAGS_BUILDTYPE := -g -Xclang -gcodeview -llibucrtd -llibvcruntimed -llibcmtd -llibcpmtd
 endif
 
-OSTYPE_LDFLAGS :=  --target=$(OSTYPE_TARGET) -fuse-ld=lld -Xlinker -nodefaultlib $(OSTYPE_LDFLAGS_BUILDTYPE) -lkernel32 -lws2_32
-OSTYPE_STANDALONE_LDFLAGS := $(OSTYPE_LDFLAGS)
-OSTYPE_EXEC_FLAGS := --target=$(OSTYPE_TARGET) -fuse-ld=lld -Xlinker -nodefaultlib $(OSTYPE_LDFLAGS_BUILDTYPE) -lkernel32 -lws2_32
+OSTYPE_EXEC_SUFFIX := .exe
+OSTYPE_DSO_SUFFIX := .dll
+OSTYPE_LIB_SUFFIX := .lib
+OSTYPE_LIB_PREFIX :=
+
+OSTYPE_GENERAL_CFLAGS := $(OSTYPE_CFLAGS) -DSP_BUILD_SHARED_LIBRARY
+OSTYPE_LIB_CFLAGS := -fPIC -DPIC
+OSTYPE_EXEC_CFLAGS :=
+
+OSTYPE_GENERAL_CXXFLAGS :=  $(OSTYPE_CFLAGS) -Wno-overloaded-virtual -frtti -DSP_BUILD_SHARED_LIBRARY
+OSTYPE_LIB_CXXFLAGS := -fPIC -DPIC
+OSTYPE_EXEC_CXXFLAGS :=
+
+OSTYPE_GENERAL_LDFLAGS :=  --target=$(OSTYPE_TARGET) -fuse-ld=lld -Xlinker -nodefaultlib $(OSTYPE_LDFLAGS_BUILDTYPE) -lkernel32 -lws2_32
+OSTYPE_EXEC_LDFLAGS := 
+OSTYPE_LIB_LDFLAGS :=
 
 XWIN := 1
 WIN32 := 1
