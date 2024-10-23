@@ -23,6 +23,8 @@
 # You can use ANDROID_NDK_ROOT env var
 NDK ?= $(ANDROID_NDK_ROOT)
 
+OSTYPE_IS_ANDROID := 1
+
 OSTYPE_DEPS := deps/android/universal
 OSTYPE_PREBUILT_PATH := deps/android/$$(TARGET_ARCH_ABI)/lib
 OSTYPE_INCLUDE :=  deps/android/$$(TARGET_ARCH_ABI)/include
@@ -70,9 +72,9 @@ $(ANDROID_EXPORT_PATH)/Android.mk.tmp:
 	@echo '\t$(TOOLKIT_SHADERS_TARGET_INCLUDE_DIR) \\' >> $@
 	@echo '\t$(TOOLKIT_SHADERS_TARGET_INCLUDE_FILES) \\' >> $@
 	@echo '\t$(abspath $(GLOBAL_ROOT)/$(OSTYPE_INCLUDE))' >> $@
-	@echo 'LOCAL_WHOLE_STATIC_LIBRARIES := cpufeatures $(call android_lib_list,$(sort $(TOOLKIT_LIBS)),build)' >> $@
+	@echo 'LOCAL_WHOLE_STATIC_LIBRARIES := cpufeatures $(call android_lib_list,$(sort $(BUILD_LIBS)),build)' >> $@
 	@echo 'include $$(BUILD_STATIC_LIBRARY)' >> $@
-	@echo '$(call android_lib_defs,$(call android_filter_libs,$(sort $(TOOLKIT_LIBS))),build)' >> $@
+	@echo '$(call android_lib_defs,$(call android_filter_libs,$(sort $(BUILD_LIBS))),build)' >> $@
 	@echo '' >> $@
 	@echo '$$(call import-module,android/cpufeatures)' >> $@
 

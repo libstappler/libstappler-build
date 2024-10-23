@@ -27,6 +27,10 @@ LOCAL_LIBRARY ?= libstappler
 
 include $(BUILD_ROOT)/utils/detect-platform.mk
 
+ifndef MACOS
+BUILD_SHARED_PKGCONFIG := 1
+endif
+
 include $(BUILD_ROOT)/general/compile.mk
 
 BUILD_STAPPLER_ROOT := $(abspath $(STAPPLER_ROOT))
@@ -289,6 +293,10 @@ $(INSTALL_SHAREDIR)/%.mk: $(BUILD_С_OUTDIR)/share/%.mk
 
 ifdef DISTRIB
 include $(BUILD_ROOT)/distrib/$(DISTRIB).mk
+else
+ifdef OSTYPE_IS_MACOS
+include $(BUILD_ROOT)/distrib/macos.mk
+endif
 endif
 
 all: $(BUILD_SHARED_LIBS) $(BUILD_INCLUDE_FILES) $(BUILD_MODULE_HEADERS) $(BUILD_TARGET_MAKEFILES) $(BUILD_SHARED_CONFIG)

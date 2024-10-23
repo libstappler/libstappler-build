@@ -89,3 +89,9 @@ sp_os_path = $(shell cygpath -u $(abspath $(1)))
 else
 sp_os_path = $(1)
 endif
+
+ifeq (4.1,$(firstword $(sort $(MAKE_VERSION) 4.1)))
+MAKE_4_1 := 1
+else
+$(info COMPATIBILITY MODE: Some functions may not work. Minimal required make version: 4.1)
+endif
