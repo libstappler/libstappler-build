@@ -22,15 +22,15 @@
 # Для Android в пути к библоитеке используется символ-заместитель для архитектуры, потому используется abspath вместо realpath
 ifndef BUILD_SHARED
 ifdef ANDROID
-TOOLKIT_LIBS := $(call sp_toolkit_resolve_libs, $(abspath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH))), $(TOOLKIT_LIBS)) $(LDFLAGS)
+BUILD_LIBS := $(call sp_toolkit_resolve_libs, $(abspath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH))), $(TOOLKIT_LIBS)) $(LDFLAGS)
 else
 RPATH_PREFIX := -Wl,-rpath,
-TOOLKIT_LIBS := \
+BUILD_LIBS := \
 	$(if $(BUILD_HOST),$(addprefix -L,$(SHARED_LIBDIR)) $(addprefix $(RPATH_PREFIX),$(SHARED_RPATH))) \
 	$(call sp_toolkit_resolve_libs, $(if $(SHARED_LIBDIR),,$(realpath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH)))), $(TOOLKIT_LIBS)) $(LDFLAGS)
 endif # ANDROID
 else
-TOOLKIT_LIBS :=
+BUILD_LIBS :=
 endif # BUILD_SHARED
 
 # Список полных путей к прекомпилируемым заголовкам
@@ -52,6 +52,7 @@ TOOLKIT_INCLUDES := $(call sp_toolkit_include_list, $(TOOLKIT_INCLUDES_DIRS), $(
 BUILD_INCLUDES := $(call sp_local_include_list,$(LOCAL_INCLUDES_DIRS),$(LOCAL_INCLUDES_OBJS))
 
 BUILD_GENERAL_CFLAGS := \
+	$(BUILD_TYPE_CFLAGS) \
 	$(GLOBAL_GENERAL_CFLAGS) \
 	$(TOOLKIT_GENERAL_CFLAGS) \
 	$(LOCAL_CFLAGS) \
@@ -61,6 +62,7 @@ BUILD_GENERAL_CFLAGS := \
 	$(TOOLKIT_SHADERS_TARGET_INCLUDE)
 
 BUILD_GENERAL_CXXFLAGS := \
+	$(BUILD_TYPE_CXXFLAGS) \
 	$(GLOBAL_GENERAL_CXXFLAGS) \
 	$(TOOLKIT_GENERAL_CXXFLAGS) \
 	$(LOCAL_CXXFLAGS) \
@@ -94,11 +96,12 @@ BUILD_LIB_CXXFLAGS := \
 	$(TOOLKIT_LIB_CXXFLAGS)
 
 BUILD_GENERAL_LDFLAGS := \
+	$(BUILD_TYPE_LDFLAGS) \
 	$(GLOBAL_GENERAL_LDFLAGS) \
 	$(TOOLKIT_GENERAL_LDFLAGS) \
 	$(LOCAL_LDFLAGS) \
-	$(TOOLKIT_LIBS) \
-	$(call sp_toolkit_resolve_libs $(LOCAL_LIBS))
+	$(BUILD_LIBS) \
+	$(call sp_toolkit_resolve_libs, $(LOCAL_LIBS))
 
 BUILD_EXEC_LDFLAGS := \
 	$(BUILD_GENERAL_LDFLAGS) \

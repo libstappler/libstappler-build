@@ -107,9 +107,11 @@ sp_local_include_list = \
 sp_local_object_list = \
 	$(addprefix $(1)/objs/,$(patsubst %.mm,%.o,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(notdir $(2))))))
 
-ifdef OSTYPE_IS_WIN32
-sp_toolkit_transform_lib = \
+sp_toolkit_transform_lib_ldflag = \
 	$(patsubst -l:lib%.a,-l%,$(1))
+
+ifdef OSTYPE_IS_WIN32
+sp_toolkit_transform_lib = $(sp_toolkit_transform_lib_ldflag)
 else
 sp_toolkit_transform_lib = $(1)
 endif

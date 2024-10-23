@@ -87,25 +87,8 @@ ios-clean: ios-debug-clean
 ios-export:
 	@$(MAKE) $(call sp_detect_platform,ios) IOS_ARCH=export ios-export
 
-ios-debug:
-	@$(MAKE) $(call sp_detect_platform,ios) ios
-
-ios-debug-clean:
-	@$(MAKE) $(call sp_detect_platform,ios) ios-clean
-
-ios-release:
-	@$(MAKE) $(call sp_detect_platform,ios) RELEASE=1 ios
-
-ios-release-clean:
-	@$(MAKE) $(call sp_detect_platform,ios) RELEASE=1 ios-clean
-
-ios-all:
-	@$(MAKE) $(call sp_detect_platform,ios) ios
-	@$(MAKE) $(call sp_detect_platform,ios) RELEASE=1 ios
-
-ios-all-clean:
-	@$(MAKE) $(call sp_detect_platform,ios) ios-clean
-	@$(MAKE) $(call sp_detect_platform,ios) RELEASE=1 ios-clean
+mac-export:
+	@$(MAKE) $(call sp_detect_platform,host) RELEASE=1 mac-export
 
 xwin: xwin-debug
 xwin-clean: xwin-debug-clean

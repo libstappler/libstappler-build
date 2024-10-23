@@ -21,10 +21,6 @@
 # to use without Stappler SDK, just watch for root module list
 LOCAL_MODULES_PATHS ?= $(GLOBAL_ROOT)/modules.mk
 
-define include_module_path =
-include $(1)
-endef
-
 define include_module_source =
 TOOLKIT_MODULE_PATH := $(1)
 include $(1)
@@ -53,10 +49,14 @@ ifdef SHARED_PREFIX
 TOOLKIT_MODULE_LIST += $(wildcard $(BUILD_ROOT)/modules/*.mk)
 $(foreach include,$(filter-out $(STAPPLER_ROOT)/%,$(LOCAL_MODULES_PATHS)),$(eval $(call include_module_path,$(include))))
 else
-$(foreach include,$(LOCAL_MODULES_PATHS),$(eval $(call include_module_path,$(include))))
+include $(LOCAL_MODULES_PATHS)
 endif
 
+ifdef MAKE_4_1
 $(foreach include,$(TOOLKIT_MODULE_LIST),$(eval $(call include_module_source,$(include))))
+else
+include $(TOOLKIT_MODULE_LIST)
+endif # MAKE_4_1
 
 $(foreach module,$(LOCAL_MODULES_OPTIONAL),$(eval $(call include_module_optional,$(module))))
 
@@ -98,7 +98,7 @@ TOOLKIT_SRCS_OBJS_WITH_SHADERS += $(if $($(1)_SHADERS_DIR),$($(1)_SRCS_OBJS))
 TOOLKIT_WASM_DIRS += $($(1)_WASM_DIRS)
 TOOLKIT_WASM_OBJS += $($(1)_WASM_OBJS)
 TOOLKIT_SHARED_CONSUME += $($(1)_SHARED_CONSUME)
-ifdef BUILD_SHARED
+ifdef BUILD_SHARED_PKGCONFIG
 TOOLKIT_GENERAL_CFLAGS += $(foreach name,$($(1)_SHARED_PKGCONFIG),$(shell pkg-config --cflags-only-I $(name)))
 TOOLKIT_GENERAL_CXXFLAGS += $(foreach name,$($(1)_SHARED_PKGCONFIG),$(shell pkg-config --cflags-only-I $(name)))
 endif
@@ -108,8 +108,22 @@ endef # merge_module
 reverse_modules = $(if $(wordlist 2,2,$(1)),$(call reverse_modules,$(wordlist 2,$(words $(1)),$(1))) $(firstword $(1)),$(1))
 unique_modules = $(if $1,$(firstword $1) $(call unique_modules,$(filter-out $(firstword $1),$1)))
 
+
+ifdef MAKE_4_1
 $(foreach module,$(LOCAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$(eval $(call follow_deps_module,$(module_name)))))
+else
+# WARNING: no infinite recursion control!
+read_dependencies = $(filter-out $(LOCAL_MODULES),\
+	$(foreach module,$(1),$(foreach module_name,$(MODULE_$(module)),$($(module_name)_DEPENDS_ON))) \
+)
+
+read_dependencies_recursive = $(call read_dependencies,$(1)) \
+	$(if $(call read_dependencies,$(1)),$(call read_dependencies_recursive,$(call read_dependencies,$(1))))
+
+LOCAL_MODULES := $(LOCAL_MODULES) $(call read_dependencies_recursive,$(LOCAL_MODULES))
+endif # MAKE_4_1
+
 
 GLOBAL_MODULES := $(call reverse_modules,$(call unique_modules,$(call reverse_modules,$(LOCAL_MODULES))))
 
@@ -117,14 +131,54 @@ $(foreach module,$(GLOBAL_MODULES),$(if $(MODULE_$(module)),,$(error Module not 
 
 $(info Enabled modules: $(GLOBAL_MODULES))
 
+
+ifdef MAKE_4_1
 $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$(eval $(call merge_module,$(module_name),$(module)))))
+else
+# Fallback for macOS
+TOOLKIT_GENERAL_CFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_FLAGS) $($(module_name)_GENERAL_CFLAGS) -D$(module_name)))
+TOOLKIT_GENERAL_CXXFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_FLAGS) $($(module_name)_GENERAL_CXXFLAGS) -D$(module_name)))
+TOOLKIT_GENERAL_LDFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_GENERAL_LDFLAGS)))
+TOOLKIT_LIB_CFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_LIB_CFLAGS)))
+TOOLKIT_LIB_CXXFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_LIB_CXXFLAGS)))
+TOOLKIT_LIB_LDFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_LIB_LDFLAGS)))
+TOOLKIT_EXEC_CFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_EXEC_CFLAGS)))
+TOOLKIT_EXEC_CXXFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_EXEC_CXXFLAGS)))
+TOOLKIT_EXEC_LDFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_EXEC_LDFLAGS)))
+TOOLKIT_INCLUDES_DIRS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_INCLUDES_DIRS)))
+TOOLKIT_INCLUDES_OBJS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_INCLUDES_OBJS)))
+TOOLKIT_SHADERS_DIR := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_SHADERS_DIR)))
+TOOLKIT_SHADERS_INCLUDE := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_SHADERS_INCLUDE)))
+TOOLKIT_LIBS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_LIBS)))
+TOOLKIT_SRCS_DIRS_WITH_SHADERS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$(if $($(module_name)_SHADERS_DIR),$($(module_name)_SRCS_DIRS))))
+TOOLKIT_SRCS_OBJS_WITH_SHADERS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$(if $($(module_name)_SHADERS_DIR),$($(module_name)_SRCS_OBJS))))
+endif # MAKE_4_1
+
 
 TOOLKIT_MODULES := $(BUILD_С_OUTDIR)/modules.info
 TOOLKIT_CACHED_MODULES := $(shell cat $(TOOLKIT_MODULES) 2> /dev/null)
 
+ifdef MAKE_4_1
 ifneq ($(LOCAL_MODULES),$(TOOLKIT_CACHED_MODULES))
 $(info Modules was updated)
 $(shell $(GLOBAL_MKDIR) $(BUILD_С_OUTDIR); echo '$(LOCAL_MODULES)' > $(TOOLKIT_MODULES))
 endif
+endif # MAKE_4_1
 	
