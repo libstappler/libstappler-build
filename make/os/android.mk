@@ -67,10 +67,10 @@ $(ANDROID_EXPORT_PATH)/Android.mk.tmp:
 		printf " \\\\\n\t$$file" >> $@; \
 	done
 	@echo ' \\' >> $@
-	@echo '\t$(BUILD_SHADERS_TARGET_INCLUDE_DIR) \\' >> $@
-	@echo '\t$(BUILD_SHADERS_TARGET_INCLUDE_FILES) \\' >> $@
-	@echo '\t$(TOOLKIT_SHADERS_TARGET_INCLUDE_DIR) \\' >> $@
-	@echo '\t$(TOOLKIT_SHADERS_TARGET_INCLUDE_FILES) \\' >> $@
+	@echo '\t$(abspath $(BUILD_SHADERS_TARGET_INCLUDE_DIR)) \\' >> $@
+	@echo '\t$(abspath $(BUILD_SHADERS_TARGET_INCLUDE_FILES)) \\' >> $@
+	@echo '\t$(abspath $(TOOLKIT_SHADERS_TARGET_INCLUDE_DIR)) \\' >> $@
+	@echo '\t$(abspath $(TOOLKIT_SHADERS_TARGET_INCLUDE_FILES)) \\' >> $@
 	@echo '\t$(abspath $(GLOBAL_ROOT)/$(OSTYPE_INCLUDE))' >> $@
 	@echo 'LOCAL_WHOLE_STATIC_LIBRARIES := cpufeatures $(call android_lib_list,$(sort $(BUILD_LIBS)),build)' >> $@
 	@echo 'include $$(BUILD_STATIC_LIBRARY)' >> $@
