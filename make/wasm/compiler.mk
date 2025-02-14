@@ -56,33 +56,13 @@ sp_compile_wasm_c = $(GLOBAL_QUIET_WASM_CC) $(GLOBAL_MKDIR) $(dir $@); $(WASI_SD
 sp_compile_wasm_cpp = $(GLOBAL_QUIET_WASM_CXX) $(GLOBAL_MKDIR) $(dir $@); $(WASI_SDK_CXX) \
 	$(OSTYPE_CPP_FILE) $(call sp_compile_dep, $@, $(1))  -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
 
-sp_toolkit_wit_list = $(foreach f,\
-	$(realpath $(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.wit'))) \
-	$(realpath $(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) -name '*.wit'))) \
-	$(abspath $(filter /%,$(filter %.wit,$(2)))) \
-	$(abspath $(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter %.wit,$(2))))) \
-,$(call sp_unconvert_path,$(f)))
+sp_toolkit_wit_list = $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT),*.wit,)
 
-sp_local_wit_list = \
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.wit')) \
-	$(filter /%,$(filter %.wit,$(2))) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(LOCAL_ROOT)/$(dir) -name '*.wit')) \
-	$(addprefix $(LOCAL_ROOT)/,$(filter-out /%,$(filter %.wit,$(2))))
+sp_local_wit_list = $(call sp_make_general_source_list,$(1),$(2),$(LOCAL_ROOT),*.wit,)
 
-sp_wasm_srcs_list = \
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.cpp')) \
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.c')) \
-	$(filter /%,$(2)) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(3)/$(dir) -name '*.cpp')) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(3)/$(dir) -name '*.c')) \
-	$(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(2))) \
+sp_wasm_srcs_list =  $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT),*.cpp *.c,)
 
-sp_wasm_include_list = $(foreach f,$(realpath\
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -type d)) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(3)/$(dir) -type d)) \
-	$(addprefix $(3)/,$(filter-out /%,$(2))) \
-	$(filter /%,$(2)) \
-),$(call sp_unconvert_path,$(f)))
+sp_wasm_include_list = $(call sp_make_general_include_list,$(1),$(2),$(3))
 
 sp_wasm_object_list = \
 	$(addprefix $(1),$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(realpath $(2)))))

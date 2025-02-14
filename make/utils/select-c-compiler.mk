@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2025 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ include $(BUILD_ROOT)/utils/define-clang-16.mk
 endif
 
 ifeq ($(UNAME),Msys)
-# Для XWIN нужен clang не менее 16.0, другие компиляторы не поддерживаются
+# Для MSYS нужен clang не менее 16.0, другие компиляторы не поддерживаются
 include $(BUILD_ROOT)/utils/define-clang-16.mk
 endif
 

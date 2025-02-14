@@ -127,7 +127,6 @@ $(foreach target,$(TOOLKIT_PRECOMPILED_HEADERS),\
 $(foreach target,$(TOOLKIT_LIB_GCH),$(eval $(call BUILD_gch_rule,$(target),$(BUILD_LIB_CXXFLAGS))))
 $(foreach target,$(TOOLKIT_EXEC_GCH),$(eval $(call BUILD_gch_rule,$(target),$(BUILD_EXEC_CXXFLAGS))))
 
-
 # Список полных путей к компилируемым файлам фреймворка
 TOOLKIT_SRCS := $(call sp_toolkit_source_list, $(TOOLKIT_SRCS_DIRS), $(TOOLKIT_SRCS_OBJS))
 

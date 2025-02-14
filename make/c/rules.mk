@@ -45,29 +45,13 @@ sp_compile_mm = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
 
 sp_copy_header = @@$(GLOBAL_MKDIR) $(dir $@); cp -f $< $@
 
-# $(call sp_toolkit_source_list, $($(TOOLKIT_NAME)_SRCS_DIRS), $($(TOOLKIT_NAME)_SRCS_OBJS))
-
-sp_toolkit_source_list_c = $(foreach f,\
-	$(realpath $(foreach dir,$(filter /%,$(1)),$(shell find $(dir) \( -name "*.c" -or -name "*.cpp" \)))) \
-	$(realpath $(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) \( -name "*.c" -or -name "*.cpp" \)))) \
-	$(abspath $(filter /%,$(filter-out %.mm,$(2)))) \
-	$(abspath $(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter-out %.mm,$(2))))) \
-	$(if $(BUILD_OBJC), \
-		$(realpath $(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.mm'))) \
-		$(realpath $(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) -name '*.mm'))) \
-		$(abspath $(filter /%,$(filter %.mm,$(2)))) \
-		$(abspath $(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(filter %.mm,$(2))))) \
-	)\
-,$(call sp_unconvert_path,$(f)))
+sp_toolkit_source_list_c = $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT),\
+	*.cpp *.c $(if $(BUILD_OBJC),*.mm),\
+	$(if $(BUILD_OBJC),,%.mm))
 
 sp_toolkit_source_list = $(call sp_toolkit_source_list_c,$(1),$(filter-out %.wit,$(2)))
 
-sp_toolkit_include_list = $(foreach f,$(realpath\
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -type d)) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(GLOBAL_ROOT)/$(dir) -type d)) \
-	$(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(2))) \
-	$(filter /%,$(2)) \
-),$(call sp_unconvert_path,$(f)))
+sp_toolkit_include_list = $(call sp_make_general_include_list,$(1),$(2),$(GLOBAL_ROOT))
 
 sp_toolkit_object_list = \
 	$(addprefix $(1)/objs/,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(patsubst %.mm,%.o,$(notdir $(2))))))
@@ -82,27 +66,13 @@ sp_toolkit_prefix_files_list = \
 sp_toolkit_include_flags = \
 	$(addprefix -I,$(sort $(dir $(1)))) $(addprefix -I,$(2))
 
-sp_local_source_list_c = \
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.cpp')) \
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.c')) \
-	$(filter /%,$(filter-out %.mm,$(2))) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(LOCAL_ROOT)/$(dir) -name '*.cpp')) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(LOCAL_ROOT)/$(dir) -name '*.c')) \
-	$(addprefix $(LOCAL_ROOT)/,$(filter-out /%,$(filter-out %.mm,$(2)))) \
-	$(if $(BUILD_OBJC),\
-		$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -name '*.mm'))\
-		$(foreach dir,$(filter-out /%,$(1)),$(shell find $(LOCAL_ROOT)/$(dir) -name '*.mm'))\
-		$(filter /%,$(filter %.mm,$(2)))\
-		$(addprefix $(LOCAL_ROOT)/,$(filter-out /%,$(filter %.mm,$(2))))\
-	)
+sp_local_source_list_c = $(call sp_make_general_source_list,$(1),$(2),$(LOCAL_ROOT),\
+	*.cpp *.c $(if $(BUILD_OBJC),*.mm),\
+	$(if $(BUILD_OBJC),,%.mm))
 
 sp_local_source_list = $(call sp_local_source_list_c,$(1),$(filter-out %.wit,$(2)))
 
-sp_local_include_list = \
-	$(foreach dir,$(filter /%,$(1)),$(shell find $(dir) -type d)) \
-	$(filter /%,$(2)) \
-	$(foreach dir,$(filter-out /%,$(1)),$(shell find $(LOCAL_ROOT)/$(dir) -type d)) \
-	$(addprefix $(LOCAL_ROOT)/,$(filter-out /%,$(2)))
+sp_local_include_list = $(call sp_make_general_include_list,$(1),$(2),$(LOCAL_ROOT))
 
 sp_local_object_list = \
 	$(addprefix $(1)/objs/,$(patsubst %.mm,%.o,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(notdir $(2))))))

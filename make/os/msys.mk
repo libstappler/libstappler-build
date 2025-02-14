@@ -39,21 +39,30 @@ OSTYPE_CFLAGS :=  -DWIN32 -DMSYS -Wall --target=$(OSTYPE_TARGET) -m64 -msse2 -D_
 	-Wno-unqualified-std-cast-call -Wno-microsoft-include -Wno-nonportable-include-path -Wno-vla-cxx-extension
 OSTYPE_CPPFLAGS := -Wno-overloaded-virtual -frtti
 
+ifeq ($(RELEASE),1)
+OSTYPE_CFLAGS +=
+OSTYPE_LDFLAGS_BUILDTYPE :=  -llibucrt -llibvcruntime -llibcmt -llibcpmt
+else
+OSTYPE_CFLAGS += -D_DEBUG -Xclang -gcodeview
+OSTYPE_LDFLAGS_BUILDTYPE := -g -Xclang -gcodeview -llibucrtd -llibvcruntimed -llibcmtd -llibcpmtd
+endif
+
 OSTYPE_EXEC_SUFFIX := .exe
 OSTYPE_DSO_SUFFIX := .dll
 OSTYPE_LIB_SUFFIX := .lib
 OSTYPE_LIB_PREFIX :=
 
-ifeq ($(RELEASE),1)
-OSTYPE_CFLAGS +=
-OSTYPE_LDFLAGS_BUILDTYPE :=  -llibucrt -llibvcruntime -llibcmt -llibcpmt
-else
-OSTYPE_CFLAGS += -D_DEBUG -Xclang -gcodeview -gdwarf-2
-OSTYPE_LDFLAGS_BUILDTYPE := -g -Xclang -gcodeview -gdwarf-2 -llibucrtd -llibvcruntimed -llibcmtd -llibcpmtd
-endif
+OSTYPE_GENERAL_CFLAGS := $(OSTYPE_CFLAGS) -DSP_BUILD_SHARED_LIBRARY
+OSTYPE_LIB_CFLAGS := -fPIC -DPIC
+OSTYPE_EXEC_CFLAGS :=
 
-OSTYPE_LDFLAGS :=  --target=$(OSTYPE_TARGET) -fuse-ld=lld -Xlinker -nodefaultlib $(OSTYPE_LDFLAGS_BUILDTYPE) -lkernel32 -lws2_32
-OSTYPE_EXEC_FLAGS := --target=$(OSTYPE_TARGET) -fuse-ld=lld -Xlinker -nodefaultlib $(OSTYPE_LDFLAGS_BUILDTYPE) -lkernel32 -lws2_32
+OSTYPE_GENERAL_CXXFLAGS :=  $(OSTYPE_CFLAGS) -Wno-overloaded-virtual -frtti -DSP_BUILD_SHARED_LIBRARY
+OSTYPE_LIB_CXXFLAGS := -fPIC -DPIC
+OSTYPE_EXEC_CXXFLAGS :=
+
+OSTYPE_GENERAL_LDFLAGS :=  --target=$(OSTYPE_TARGET) -fuse-ld=lld -Xlinker -nodefaultlib $(OSTYPE_LDFLAGS_BUILDTYPE) -lkernel32 -lws2_32
+OSTYPE_EXEC_LDFLAGS := 
+OSTYPE_LIB_LDFLAGS :=
 
 MSYS := 1
 WIN32 := 1
