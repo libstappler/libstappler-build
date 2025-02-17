@@ -56,11 +56,11 @@ sp_compile_wasm_c = $(GLOBAL_QUIET_WASM_CC) $(GLOBAL_MKDIR) $(dir $@); $(WASI_SD
 sp_compile_wasm_cpp = $(GLOBAL_QUIET_WASM_CXX) $(GLOBAL_MKDIR) $(dir $@); $(WASI_SDK_CXX) \
 	$(OSTYPE_CPP_FILE) $(call sp_compile_dep, $@, $(1))  -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
 
-sp_toolkit_wit_list = $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT),*.wit,)
+sp_toolkit_wit_list = $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT),*.wit,%.c %.cpp %.mm)
 
-sp_local_wit_list = $(call sp_make_general_source_list,$(1),$(2),$(LOCAL_ROOT),*.wit,)
+sp_local_wit_list = $(call sp_make_general_source_list,$(1),$(2),$(LOCAL_ROOT),*.wit,%.c %.cpp %.mm)
 
-sp_wasm_srcs_list =  $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT),*.cpp *.c,)
+sp_wasm_srcs_list =  $(call sp_make_general_source_list,$(1),$(2),$(3),*.cpp *.c,)
 
 sp_wasm_include_list = $(call sp_make_general_include_list,$(1),$(2),$(3))
 

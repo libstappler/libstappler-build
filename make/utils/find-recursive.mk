@@ -21,6 +21,8 @@
 # Рекурсивный поиск директорий и файлов без использования shell
 # Требует GNU Make
 
+sp_add_root = $(addprefix $(addsuffix /,$(patsubst %/,%,$(1))),$(2))
+
 ### sp_find_files : Находит все файлы в директориях по шаблону
 # $(1) - Список директорий
 # $(2) - Список шаблонов
@@ -58,7 +60,6 @@ sp_find_dirs_recursive = \
 sp_find_recursive = $(foreach dir,$(1),$(call sp_find_files,$(call sp_find_dirs_recursive,$(dir)),$(2)))
 
 
-
 ### sp_make_general_source_list : подготавливает список компилируемых файлов c, cpp, mm,
 ### с использованием полных путей для файла. Относительные пути дополняются с явным указанием корня.
 # $(1) - Список директорий для рекурсивного поиска
@@ -70,11 +71,11 @@ sp_find_recursive = $(foreach dir,$(1),$(call sp_find_files,$(call sp_find_dirs_
 sp_make_general_source_list = \
 	$(realpath \
 		$(call sp_find_recursive,\
-			$(filter /%,$(1)) $(addprefix $(3),$(filter-out /%,$(1))),\
+			$(filter /%,$(1)) $(call sp_add_root,$(3),$(filter-out /%,$(1))),\
 			$(4)) \
 		$(filter /%,\
 			$(if $(5),$(filter-out $(5),$(2)),$(2)))\
-		$(addprefix $(3),$(filter-out /%,\
+		$(call sp_add_root,$(3),$(filter-out /%,\
 			$(if $(5),$(filter-out $(5),$(2)),$(2))))\
 	)
 
@@ -89,10 +90,10 @@ sp_make_general_include_list = \
 	$(realpath \
 		$(foreach dir,$(1),\
 			$(if $(filter /%,$(dir)),\
-				$(call sp_find_dirs_recursive,$(dir))\
-				$(call sp_find_dirs_recursive,$(addprefix $(GLOBAL_ROOT)/,$(dir)))\
+				$(call sp_find_dirs_recursive,$(dir)),\
+				$(call sp_find_dirs_recursive,$(call sp_add_root,$(3),$(dir)))\
 			)\
 		)\
-		$(addprefix $(3)/,$(filter-out /%,$(2))) \
+		$(call sp_add_root,$(3),$(filter-out /%,$(2))) \
 		$(filter /%,$(2)) \
 	)

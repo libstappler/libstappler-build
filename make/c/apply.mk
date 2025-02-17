@@ -26,7 +26,7 @@ BUILD_LIBS := $(call sp_toolkit_resolve_libs, $(abspath $(addprefix $(GLOBAL_ROO
 else
 RPATH_PREFIX := -Wl,-rpath,
 BUILD_LIBS := \
-	$(if $(BUILD_HOST),$(addprefix -L,$(SHARED_LIBDIR)) $(addprefix $(RPATH_PREFIX),$(SHARED_RPATH))) \
+	$(if $(BUILD_HOST),$(addprefix -L,$(SHARED_LIBDIR)) $(if $(SHARED_RPATH),$(addprefix $(RPATH_PREFIX),$(SHARED_RPATH)))) \
 	$(call sp_toolkit_resolve_libs, $(if $(SHARED_LIBDIR),,$(realpath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH)))), $(TOOLKIT_LIBS)) $(LDFLAGS)
 endif # ANDROID
 else

@@ -33,7 +33,7 @@ endef
 
 # inject debug module
 ifndef SHARED_PREFIX
-LOCAL_MODULES_PATHS += $(BUILD_ROOT)/../module/module.mk
+LOCAL_MODULES_PATHS += $(realpath $(BUILD_ROOT)/../module/module.mk)
 endif # SHARED_PREFIX
 
 LOCAL_MODULES += stappler_build_debug_module
@@ -47,9 +47,9 @@ TOOLKIT_MODULE_LIST :=
 
 ifdef SHARED_PREFIX
 TOOLKIT_MODULE_LIST += $(wildcard $(BUILD_ROOT)/modules/*.mk)
-$(foreach include,$(filter-out $(STAPPLER_ROOT)/%,$(LOCAL_MODULES_PATHS)),$(eval $(call include_module_path,$(include))))
+$(foreach include,$(filter /%,$(LOCAL_MODULES_PATHS)),$(eval $(call include_module_path,$(include))))
 else
-include $(LOCAL_MODULES_PATHS)
+include $(filter /%,$(LOCAL_MODULES_PATHS)) $(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(LOCAL_MODULES_PATHS)))
 endif
 
 ifdef MAKE_4_1

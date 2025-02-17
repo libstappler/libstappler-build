@@ -44,7 +44,16 @@ LOCAL_INSTALL_DIR ?= $(LOCAL_OUTDIR)/xwin
 BUILD_OUTDIR := $(LOCAL_OUTDIR)/xwin/$(BUILD_TYPE)
 endif
 
+ifdef SHARED_PREFIX
+GLOBAL_ROOT := $(SHARED_PREFIX)
+else
+ifdef STAPPLER_ROOT
 GLOBAL_ROOT := $(STAPPLER_ROOT)
+else
+GLOBAL_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST)))/../../..)
+endif
+endif
+
 GLOBAL_OUTPUT := $(BUILD_OUTDIR)
 
 GLOBAL_RM ?= rm -f
