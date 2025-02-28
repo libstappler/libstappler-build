@@ -40,6 +40,7 @@ endif
 # Загружаем предустановки
 include $(BUILD_ROOT)/utils/defaults.mk
 include $(BUILD_ROOT)/utils/find-recursive.mk
+include $(BUILD_ROOT)/utils/detect-build-number.mk
 
 # Вычисляем компилятор и параметры компиляции
 include $(BUILD_ROOT)/shaders/compiler.mk
