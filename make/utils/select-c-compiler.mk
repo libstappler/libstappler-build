@@ -38,6 +38,11 @@ GLOBAL_CC ?= clang
 
 else
 
+ifeq ($(CLANG),1)
+GLOBAL_CPP ?= clang++
+GLOBAL_CC ?= clang
+endif
+
 ifeq ($(STAPPLER_ARCH),e2k)
 ifneq ($(STAPPLER_ARCH),$(UNAME_ARCH))
 GLOBAL_CPP ?= e2k-linux-l++

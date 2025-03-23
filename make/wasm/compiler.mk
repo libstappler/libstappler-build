@@ -51,10 +51,10 @@ BUILD_WASM_CFLAGS_INIT := $(BUILD_WASM_CFLAGS_DEFAULT) -std=$(GLOBAL_STD)
 BUILD_WASM_CXXFLAGS_INIT := $(BUILD_WASM_CFLAGS_DEFAULT) -std=$(GLOBAL_STDXX) -fno-exceptions
 
 sp_compile_wasm_c = $(GLOBAL_QUIET_WASM_CC) $(GLOBAL_MKDIR) $(dir $@); $(WASI_SDK_CC) \
-	$(OSTYPE_C_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
+	$(OSTYPE_C_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $@ $<
 
 sp_compile_wasm_cpp = $(GLOBAL_QUIET_WASM_CXX) $(GLOBAL_MKDIR) $(dir $@); $(WASI_SDK_CXX) \
-	$(OSTYPE_CPP_FILE) $(call sp_compile_dep, $@, $(1))  -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
+	$(OSTYPE_CPP_FILE) $(call sp_compile_dep, $@, $(1))  -c -o $@ $<
 
 sp_toolkit_wit_list = $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT),*.wit,%.c %.cpp %.mm)
 

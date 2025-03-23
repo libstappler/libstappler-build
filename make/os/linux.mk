@@ -58,7 +58,8 @@ ifeq ($(OSTYPE_ARCH),x86_64)
 endif
 
 ifeq ($(CLANG),1)
-	OSTYPE_GENERAL_CXXFLAGS += -Wno-unneeded-internal-declaration -Wno-gnu-string-literal-operator-template
+	OSTYPE_GENERAL_CXXFLAGS += -Wno-unneeded-internal-declaration -Wno-gnu-string-literal-operator-template \
+		-Wno-vla-cxx-extension -Wno-unqualified-std-cast-call -Wno-unused-includes
 else
 	OSTYPE_GENERAL_CXXFLAGS += -Wno-class-memaccess
 endif

@@ -22,26 +22,34 @@
 
 ifeq ($(CLANG),1)
 ifdef MSYS
-# Записываем имя зависимости в формате unix, иначе make не сможет её сопоставить
-sp_compile_dep = -MMD -MP -MF $1.d -MJ $1.json $(2) -MT$(shell cygpath -u $(abspath $(1)))
+# Записываем имя зависимости в формате unix, иначе make не сможет его сопоставить
+sp_compile_dep = -MMD -MP -MF $(addsuffix .d,$(1)) -MJ $(addsuffix .json,$(1)) $(2) -MT$(shell cygpath -u $(abspath $(1)))
 else
-sp_compile_dep = -MMD -MP -MF $1.d -MJ $1.json $(2)
+sp_compile_dep = -MMD -MP -MF $(addsuffix .d,$(1)) -MJ $(addsuffix .json,$(1)) $(2)
 endif
 else
-sp_compile_dep = -MMD -MP -MF $1.d $(2) # -MT $(subst /,_,$1)
+sp_compile_dep = -MMD -MP -MF $(addsuffix .d,$(1)) $(2) # -MT $(subst /,_,$1)
 endif
 
-sp_compile_gch = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
-	$(OSTYPE_GCH_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
+# $(1) - compiler
+# $(2) - filetype flags
+# $(3) - compile flags
+# $(4) - input file
+# $(5) - output file
 
-sp_compile_c = $(GLOBAL_QUIET_CC) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CC) \
-	$(OSTYPE_C_FILE) $(call sp_compile_dep, $@, $(1)) -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
+sp_compile_command = $(1) $(2) $(call sp_compile_dep, $(5), $(3)) -c -o $(5) $(4)
 
-sp_compile_cpp = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
-	$(OSTYPE_CPP_FILE) $(call sp_compile_dep, $@, $(1))  -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
+sp_compile_gch = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@);\
+	$(call sp_compile_command,$(GLOBAL_CPP),$(OSTYPE_GCH_FILE),$(1),$<,$@)
 
-sp_compile_mm = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@); $(GLOBAL_CPP) \
-	$(OSTYPE_MM_FILE) $(call sp_compile_dep, $@, $(1)) -fobjc-arc -c -o $(call sp_convert_path,$@) $(call sp_convert_path,$<)
+sp_compile_c = $(GLOBAL_QUIET_CC) $(GLOBAL_MKDIR) $(dir $@);\
+	$(call sp_compile_command,$(GLOBAL_CC),$(OSTYPE_C_FILE),$(1),$<,$@)
+
+sp_compile_cpp = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@);\
+	$(call sp_compile_command,$(GLOBAL_CPP),$(OSTYPE_CPP_FILE),$(1),$<,$@)
+
+sp_compile_mm = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@);\
+	$(call sp_compile_command,$(GLOBAL_CPP),$(OSTYPE_MM_FILE),$(1) -fobjc-arc,$<,$@)
 
 sp_copy_header = @@$(GLOBAL_MKDIR) $(dir $@); cp -f $< $@
 
@@ -73,9 +81,6 @@ sp_local_source_list_c = $(call sp_make_general_source_list,$(1),$(2),$(LOCAL_RO
 sp_local_source_list = $(call sp_local_source_list_c,$(1),$(filter-out %.wit,$(2)))
 
 sp_local_include_list = $(call sp_make_general_include_list,$(1),$(2),$(LOCAL_ROOT))
-
-sp_local_object_list = \
-	$(addprefix $(1)/objs/,$(patsubst %.mm,%.o,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(notdir $(2))))))
 
 sp_toolkit_transform_lib_ldflag = \
 	$(patsubst -l:lib%.a,-l%,$(1))

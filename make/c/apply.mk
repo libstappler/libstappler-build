@@ -144,8 +144,8 @@ BUILD_EXEC_SRCS := \
 	$(BUILD_MAIN_SRC)
 
 BUILD_LIB_SRCS := \
-	$(TOOLKIT_SRCS) \
-	$(BUILD_SRCS)
+	$(BUILD_SRCS) \
+	$(if $(filter-out $(LOCAL_BUILD_SHARED),3),$(TOOLKIT_SRCS))
 
 $(foreach target,\
 	$(sort $(filter %.c,$(BUILD_LIB_SRCS))),\
@@ -176,10 +176,10 @@ TOOLKIT_LIB_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/lib_objs,$(
 TOOLKIT_EXEC_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_SRCS))
 
 # Список объектных файлов приложения
-BUILD_LIB_OBJS := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/lib_objs,$(BUILD_SRCS))
-BUILD_EXEC_OBJS := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(BUILD_SRCS))
+BUILD_LIB_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/lib_objs,$(BUILD_SRCS))
+BUILD_EXEC_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(BUILD_SRCS))
 
-BUILD_MAIN_OBJ := $(call sp_local_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(BUILD_MAIN_SRC))
+BUILD_MAIN_OBJ := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(BUILD_MAIN_SRC))
 
 # Список терминов для подсчёта прогресса
 BUILD_LIB_WORDS := $(words $(TOOLKIT_LIB_GCH) $(BUILD_LIB_OBJS) $(TOOLKIT_LIB_OBJS))
@@ -206,3 +206,52 @@ BUILD_LIB_OBJS := \
 # include dependencies
 -include $(patsubst %.o,%.o.d,$(BUILD_EXEC_OBJS) $(BUILD_LIB_OBJS))
 -include $(patsubst %.h.gch,%.h.gch.d,$(TOOLKIT_EXEC_GCH) $(TOOLKIT_LIB_GCH))
+
+ifdef LOCAL_EXECUTABLE
+BUILD_GENERAL_TARGET_CFLAGS := $(BUILD_EXEC_CFLAGS)
+BUILD_GENERAL_TARGET_CXXFLAGS := $(BUILD_EXEC_CXXFLAGS)
+BUILD_GENERAL_TARGET_PATH := $(BUILD_С_OUTDIR)/exec_objs
+BUILD_GENERAL_TARGET_SRCS := $(BUILD_EXEC_SRCS)
+else
+BUILD_GENERAL_TARGET_CFLAGS := $(BUILD_LIB_CFLAGS)
+BUILD_GENERAL_TARGET_CXXFLAGS := $(BUILD_LIB_CXXFLAGS)
+BUILD_GENERAL_TARGET_PATH := $(BUILD_С_OUTDIR)/lib_objs
+BUILD_GENERAL_TARGET_SRCS := $(BUILD_LIB_SRCS)
+endif
+
+sp_which = $(shell which $(1))
+
+sp_make_cdb_file_c = {"directory":"$(BUILD_WORKDIR)","file":"$(1)","output":"$(2)","command":\
+	"$(call sp_compile_command,$(call sp_which,$(GLOBAL_CC)),$(OSTYPE_C_FILE),$(BUILD_GENERAL_TARGET_CFLAGS),$(1),$(2))"},
+
+sp_make_cdb_file_cpp = {"directory":"$(BUILD_WORKDIR)","file":"$(1)","output":"$(2)","command":\
+	"$(call sp_compile_command,$(call sp_which,$(GLOBAL_CPP)),$(OSTYPE_CPP_FILE),$(BUILD_GENERAL_TARGET_CXXFLAGS),$(1),$(2))"},
+
+sp_make_cdb_file_mm = {"directory":"$(BUILD_WORKDIR)","file":"$(1)","output":"$(2)","command":\
+	"$(call sp_compile_command,$(call sp_which,$(GLOBAL_CPP)),$(OSTYPE_MM_FILE),$(BUILD_GENERAL_TARGET_CXXFLAGS),$(1),$(2))"},
+
+sp_write = $(shell echo '$(1)' >> $(2))
+
+sp_build_cdb = \
+	$(foreach file,$(sort $(filter %.cpp,$(1))),$(call sp_write,\
+		$(call sp_make_cdb_file_cpp,\
+			$(file),\
+			$(call sp_toolkit_object_list,$(BUILD_GENERAL_TARGET_PATH),$(file)) \
+		), \
+	$(BUILD_COMPILATION_DATABASE))) \
+	$(foreach file,$(sort $(filter %.c,$(1))),$(call sp_write,\
+		$(call sp_make_cdb_file_c,\
+			$(file),\
+			$(call sp_toolkit_object_list,$(BUILD_GENERAL_TARGET_PATH),$(file)) \
+		), \
+	$(BUILD_COMPILATION_DATABASE))) \
+	$(foreach file,$(sort $(filter %.mm,$(1))),$(call sp_write,\
+		$(call sp_make_cdb_file_mm,\
+			$(file),\
+			$(call sp_toolkit_object_list,$(BUILD_GENERAL_TARGET_PATH),$(file)) \
+		), \
+	$(BUILD_COMPILATION_DATABASE)))
+
+$(shell echo '[' > $(BUILD_COMPILATION_DATABASE))
+$(call sp_build_cdb,$(BUILD_GENERAL_TARGET_SRCS))
+$(shell echo ']' >> $(BUILD_COMPILATION_DATABASE))

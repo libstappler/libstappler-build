@@ -29,6 +29,8 @@ LOCAL_ANDROID_TARGET ?= application
 LOCAL_ANDROID_PLATFORM ?= android-24
 LOCAL_OPTIMIZATION ?= -Os
 
+BUILD_WORKDIR = $(patsubst %/,%,$(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
+
 ifdef BUILD_HOST
 LOCAL_INSTALL_DIR ?= $(LOCAL_OUTDIR)/host
 BUILD_OUTDIR := $(LOCAL_OUTDIR)/host/$(BUILD_TYPE)
