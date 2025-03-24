@@ -219,33 +219,57 @@ BUILD_GENERAL_TARGET_PATH := $(BUILD_С_OUTDIR)/lib_objs
 BUILD_GENERAL_TARGET_SRCS := $(BUILD_LIB_SRCS)
 endif
 
-sp_which = $(shell which $(1))
+ifdef MSYS
+sp_cdb_convert = $(subst \,\\,$(shell cygpath -w $(1)))
+sp_cdb_which = $(call sp_cdb_convert,$(shell which $(1)))
+else
+sp_cdb_convert = $(1)
+sp_cdb_which = $(shell which $(1))
+endif
 
-sp_make_cdb_file_c = {"directory":"$(BUILD_WORKDIR)","file":"$(1)","output":"$(2)","command":\
-	"$(call sp_compile_command,$(call sp_which,$(GLOBAL_CC)),$(OSTYPE_C_FILE),$(BUILD_GENERAL_TARGET_CFLAGS),$(1),$(2))"},
+sp_cdb_process_arg = \
+	$(if $(filter -I%,$(1)),-I$(call sp_cdb_convert,$(patsubst -I%,%,$(1))),\
+		$(if $(filter /%,$(1)),$(call sp_cdb_convert,$(1)),$(1))\
+	)
 
-sp_make_cdb_file_cpp = {"directory":"$(BUILD_WORKDIR)","file":"$(1)","output":"$(2)","command":\
-	"$(call sp_compile_command,$(call sp_which,$(GLOBAL_CPP)),$(OSTYPE_CPP_FILE),$(BUILD_GENERAL_TARGET_CXXFLAGS),$(1),$(2))"},
+sp_cdb_split_arguments = \
+	"$(call sp_cdb_which,$(1))"\
+	$(foreach arg,$(2),,"$(firstword $(call sp_cdb_process_arg,$(arg)))")
 
-sp_make_cdb_file_mm = {"directory":"$(BUILD_WORKDIR)","file":"$(1)","output":"$(2)","command":\
-	"$(call sp_compile_command,$(call sp_which,$(GLOBAL_CPP)),$(OSTYPE_MM_FILE),$(BUILD_GENERAL_TARGET_CXXFLAGS),$(1),$(2))"},
+sp_make_cdb_file_c = {\
+	"directory":"$(call sp_cdb_convert,$(BUILD_WORKDIR))",\
+	"file":"$(call sp_cdb_convert,$(1))",\
+	"output":"$(call sp_cdb_convert,$(2))",\
+	"arguments":[$(call sp_cdb_split_arguments,$(GLOBAL_CC),$(call sp_compile_command,,$(OSTYPE_C_FILE),$(BUILD_GENERAL_TARGET_CFLAGS),$(1),$(2)))]},
 
-sp_write = $(shell echo '$(1)' >> $(2))
+sp_make_cdb_file_cpp = {\
+	"directory":"$(call sp_cdb_convert,$(BUILD_WORKDIR))",\
+	"file":"$(call sp_cdb_convert,$(1))",\
+	"output":"$(call sp_cdb_convert,$(2))",\
+	"arguments":[$(call sp_cdb_split_arguments,$(GLOBAL_CPP),$(call sp_compile_command,,$(OSTYPE_CPP_FILE),$(BUILD_GENERAL_TARGET_CXXFLAGS),$(1),$(2)))]},
+
+sp_make_cdb_file_mm = {\
+	"directory":"$(call sp_cdb_convert,$(BUILD_WORKDIR))",\
+	"file":"$(call sp_cdb_convert,$(1))",\
+	"output":"$(call sp_cdb_convert,$(2))",\
+	"arguments":[$(call sp_cdb_split_arguments,$(GLOBAL_CPP),$(call sp_compile_command,,$(OSTYPE_MM_FILE),$(BUILD_GENERAL_TARGET_CXXFLAGS),$(1),$(2)))]},
+
+sp_cdb_write = $(shell echo '$(1)' >> $(2))
 
 sp_build_cdb = \
-	$(foreach file,$(sort $(filter %.cpp,$(1))),$(call sp_write,\
+	$(foreach file,$(sort $(filter %.cpp,$(1))),$(call sp_cdb_write,\
 		$(call sp_make_cdb_file_cpp,\
 			$(file),\
 			$(call sp_toolkit_object_list,$(BUILD_GENERAL_TARGET_PATH),$(file)) \
 		), \
 	$(BUILD_COMPILATION_DATABASE))) \
-	$(foreach file,$(sort $(filter %.c,$(1))),$(call sp_write,\
+	$(foreach file,$(sort $(filter %.c,$(1))),$(call sp_cdb_write,\
 		$(call sp_make_cdb_file_c,\
 			$(file),\
 			$(call sp_toolkit_object_list,$(BUILD_GENERAL_TARGET_PATH),$(file)) \
 		), \
 	$(BUILD_COMPILATION_DATABASE))) \
-	$(foreach file,$(sort $(filter %.mm,$(1))),$(call sp_write,\
+	$(foreach file,$(sort $(filter %.mm,$(1))),$(call sp_cdb_write,\
 		$(call sp_make_cdb_file_mm,\
 			$(file),\
 			$(call sp_toolkit_object_list,$(BUILD_GENERAL_TARGET_PATH),$(file)) \

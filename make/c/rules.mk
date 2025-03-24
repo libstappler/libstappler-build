@@ -62,7 +62,7 @@ sp_toolkit_source_list = $(call sp_toolkit_source_list_c,$(1),$(filter-out %.wit
 sp_toolkit_include_list = $(call sp_make_general_include_list,$(1),$(2),$(GLOBAL_ROOT))
 
 sp_toolkit_object_list = \
-	$(addprefix $(1)/objs/,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(patsubst %.mm,%.o,$(notdir $(2))))))
+	$(abspath $(addprefix $(1)/objs/,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(patsubst %.mm,%.o,$(notdir $(2)))))))
 
 sp_toolkit_resolve_prefix_files = \
 	$(realpath $(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(1)))) \
@@ -109,7 +109,7 @@ endef
 # $(1) - source path
 # $(2) - compilation flags
 define BUILD_gch_rule
-$(1): $(patsubst %.h.gch,%.h,$(1)) $$(LOCAL_MAKEFILE) $$($TOOLKIT_MODULES)
+$(abspath $(1)): $(patsubst %.h.gch,%.h,$(1)) $$(LOCAL_MAKEFILE) $$($TOOLKIT_MODULES)
 	$$(call sp_compile_gch,$(2))
 endef
 
@@ -118,7 +118,7 @@ endef
 # $(3) - precompiled headers
 # $(4) - compilation flags
 define BUILD_c_rule
-$(addprefix $(2)/objs/,$(patsubst %.c,%.o,$(notdir $(1)))): \
+$(abspath $(addprefix $(2)/objs/,$(patsubst %.c,%.o,$(notdir $(1))))): \
 		$(1) $(3) \
 		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
 		$$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(BUILD_SHADERS_EMBEDDED)
@@ -130,8 +130,8 @@ endef
 # $(3) - precompiled headers
 # $(4) - compilation flags
 define BUILD_cpp_rule
-$(addprefix $(2)/objs/,$(patsubst %.cpp,%.o,$(notdir $(1)))): \
-		$(1) $(3) \
+$(abspath $(addprefix $(2)/objs/,$(patsubst %.cpp,%.o,$(notdir $(1))))): \
+		$(1) $(shell cygpath -w $(1)) $(3) \
 		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
 		$$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(BUILD_SHADERS_EMBEDDED)
 	$$(call sp_compile_cpp,$(4))
