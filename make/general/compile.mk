@@ -20,8 +20,6 @@
 
 # Процесс компиляции
 
-sp_unconvert_path = $(1)
-
 # Глобальный тип сборки
 ifdef RELEASE
 	BUILD_TYPE := release

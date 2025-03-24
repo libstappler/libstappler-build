@@ -21,22 +21,20 @@
  **/
 
 #if LINUX
-#if DEBUG
-
-#define TEXTIFY(A) #A
+#ifdef STAPPLER_ROOT
 
 #define SP_DEFINE_GDB_SCRIPT(path, script_name) \
   asm("\
 .pushsection \".debug_gdb_scripts\", \"MS\",@progbits,1\n\
 .byte 1\n\
-.asciz \"" TEXTIFY(path) script_name "\"\n\
+.asciz \"" path script_name "\"\n\
 .popsection \n\
 ");
 
 SP_DEFINE_GDB_SCRIPT(STAPPLER_ROOT, "/build/gdb/printers.py")
 
 const char *get_stappler_root() {
-	return TEXTIFY(STAPPLER_ROOT);
+	return STAPPLER_ROOT;
 }
 
 #endif

@@ -23,12 +23,12 @@
 ifeq ($(CLANG),1)
 ifdef MSYS
 # Записываем имя зависимости в формате unix, иначе make не сможет его сопоставить
-sp_compile_dep = -MMD -MP -MF $(addsuffix .d,$(1)) -MJ $(addsuffix .json,$(1)) $(2) -MT$(shell cygpath -u $(abspath $(1)))
+sp_compile_dep = -MMD -MP -MF $(addsuffix .d,$(1)) $(2) -MT$(shell cygpath -u $(abspath $(1)))
 else
-sp_compile_dep = -MMD -MP -MF $(addsuffix .d,$(1)) -MJ $(addsuffix .json,$(1)) $(2)
+sp_compile_dep = -MMD -MP -MF $(addsuffix .d,$(1)) $(2)
 endif
 else
-sp_compile_dep = -MMD -MP -MF $(addsuffix .d,$(1)) $(2) # -MT $(subst /,_,$1)
+sp_compile_dep = -MMD -MP -MF $(addsuffix .d,$(1)) $(2)
 endif
 
 # $(1) - compiler
