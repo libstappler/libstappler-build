@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2025 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ sp_compile_cpp = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@);\
 sp_compile_mm = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@);\
 	$(call sp_compile_command,$(GLOBAL_CPP),$(OSTYPE_MM_FILE),$(1) -fobjc-arc,$<,$@)
 
-sp_copy_header = @@$(GLOBAL_MKDIR) $(dir $@); cp -f $< $@
+sp_copy_header = @$(GLOBAL_MKDIR) $(dir $@); cp -f $< $@
 
 sp_toolkit_source_list_c = $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT),\
 	*.cpp *.c $(if $(BUILD_OBJC),*.mm),\
@@ -62,7 +62,7 @@ sp_toolkit_source_list = $(call sp_toolkit_source_list_c,$(1),$(filter-out %.wit
 sp_toolkit_include_list = $(call sp_make_general_include_list,$(1),$(2),$(GLOBAL_ROOT))
 
 sp_toolkit_object_list = \
-	$(abspath $(addprefix $(1)/objs/,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(patsubst %.mm,%.o,$(notdir $(2)))))))
+	$(abspath $(addprefix $(1)/objs/,$(addsuffix .o,$(notdir $(2)))))
 
 sp_toolkit_resolve_prefix_files = \
 	$(realpath $(addprefix $(GLOBAL_ROOT)/,$(filter-out /%,$(1)))) \
@@ -99,6 +99,27 @@ sp_toolkit_resolve_libs = \
 	$(addprefix -L,$(1)) $(call sp_toolkit_transform_lib,$(2))
 endif
 
+sp_build_target_path = \
+	$(abspath $(addprefix $(2)/objs/,$(addsuffix .o,$(notdir $(1)))))
+
+
+ifdef MSYS
+sp_cdb_convert_cmd = `cygpath -w $(1) | sed -r 's/\\\\/\\\\\\\\/g'`
+sp_cdb_which_cmd = `which $(1) | cygpath -w -f - | sed -r 's/\\\\/\\\\\\\\/g'`
+else
+sp_cdb_convert_cmd = '$(1)'
+sp_cdb_which_cmd = `which $(1)`
+endif
+
+sp_cdb_process_arg = \
+	$(if $(filter -I%,$(1)),-I'$(call sp_cdb_convert_cmd,$(patsubst -I%,%,$(1)))',\
+		$(if $(filter /%,$(1)),'$(call sp_cdb_convert_cmd,$(1))',$(1))\
+	)
+
+sp_cdb_split_arguments_cmd = \
+	"'$(call sp_cdb_which_cmd,$(1))'"\
+	$(foreach arg,$(2),,"$(foreach a,$(call sp_cdb_process_arg,$(arg)),$(a))")
+
 # $(1) - source path
 # $(2) - target path
 define BUILD_include_rule
@@ -114,38 +135,68 @@ $(abspath $(1)): $(patsubst %.h.gch,%.h,$(1)) $$(LOCAL_MAKEFILE) $$($TOOLKIT_MOD
 endef
 
 # $(1) - source path
-# $(2) - target build dir
+# $(2) - target path
 # $(3) - precompiled headers
 # $(4) - compilation flags
 define BUILD_c_rule
-$(abspath $(addprefix $(2)/objs/,$(patsubst %.c,%.o,$(notdir $(1))))): \
-		$(1) $(3) \
+$(2).json: $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
+	@$(GLOBAL_MKDIR) $$(dir $$@)
+	@echo "{" > $$@
+	@echo '"directory":"'$$(call sp_cdb_convert_cmd,$$(BUILD_WORKDIR))'",' >> $$@
+	@echo '"file":"'$$(call sp_cdb_convert_cmd,$(1))'",' >> $$@
+	@echo '"output":"'$$(call sp_cdb_convert_cmd,$(2))'",' >> $$@
+	@echo '"arguments":[$$(call sp_cdb_split_arguments_cmd,$$(GLOBAL_CC),$$(call sp_compile_command,,$$(OSTYPE_C_FILE),$(4),$(1),$(2)))]' >> $$@
+	@echo "}," >> $$@
+	@echo [Compilation database entry]: $(notdir $(1))
+
+$(2): \
+		$(1) $(3) $$(BUILD_COMPILATION_DATABASE) \
 		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
-		$$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(BUILD_SHADERS_EMBEDDED)
+		$(2).json $$(BUILD_SHADERS_EMBEDDED)
 	$$(call sp_compile_c,$(4))
 endef
 
 # $(1) - source path
-# $(2) - target build dir
+# $(2) - target path
 # $(3) - precompiled headers
 # $(4) - compilation flags
 define BUILD_cpp_rule
-$(abspath $(addprefix $(2)/objs/,$(patsubst %.cpp,%.o,$(notdir $(1))))): \
-		$(1) $(shell cygpath -w $(1)) $(3) \
+$(2).json: $(1) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
+	@$(GLOBAL_MKDIR) $$(dir $$@)
+	@echo "{" > $$@
+	@echo '"directory":"'$$(call sp_cdb_convert_cmd,$$(BUILD_WORKDIR))'",' >> $$@
+	@echo '"file":"'$$(call sp_cdb_convert_cmd,$(1))'",' >> $$@
+	@echo '"output":"'$$(call sp_cdb_convert_cmd,$(2))'",' >> $$@
+	@echo '"arguments":[$$(call sp_cdb_split_arguments_cmd,$$(GLOBAL_CPP),$$(call sp_compile_command,,$$(OSTYPE_CPP_FILE),$(4),$(1),$(2)))]' >> $$@
+	@echo "}," >> $$@
+	@echo [Compilation database entry]: $(notdir $(1))
+
+$(2): \
+		$(1) $(3) $$(BUILD_COMPILATION_DATABASE) \
 		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
-		$$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(BUILD_SHADERS_EMBEDDED)
+		$(2).json $$(BUILD_SHADERS_EMBEDDED)
 	$$(call sp_compile_cpp,$(4))
 endef
 
 # $(1) - source path
-# $(2) - target build dir
+# $(2) - target path
 # $(3) - precompiled headers
 # $(4) - compilation flags
 define BUILD_mm_rule
-$(addprefix $(2)/objs/,$(patsubst %.mm,%.o,$(notdir $(1)))): \
-		$(1) $(3) \
+$(2).json: $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
+	@$(GLOBAL_MKDIR) $$(dir $$@)
+	@echo "{" > $$@
+	@echo '"directory":"'$$(call sp_cdb_convert_cmd,$$(BUILD_WORKDIR))'",' >> $$@
+	@echo '"file":"'$$(call sp_cdb_convert_cmd,$(1))'",' >> $$@
+	@echo '"output":"'$$(call sp_cdb_convert_cmd,$(2))'",' >> $$@
+	@echo '"arguments":[$$(call sp_cdb_split_arguments_cmd,$$(GLOBAL_CPP),$$(call sp_compile_command,,$$(OSTYPE_MM_FILE),$(4),$(1),$(2)))]' >> $$@
+	@echo "}," > $$@
+	@echo [Compilation database entry]: $(notdir $(1))
+
+$(2): \
+		$(1) $(3) $$(BUILD_COMPILATION_DATABASE) \
 		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
-		$$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(BUILD_SHADERS_EMBEDDED)
+		$(2).json $$(BUILD_SHADERS_EMBEDDED)
 	$$(call sp_compile_mm,$(4))
 endef
 

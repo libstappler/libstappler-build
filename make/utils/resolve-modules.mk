@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2025 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -98,10 +98,8 @@ TOOLKIT_SRCS_OBJS_WITH_SHADERS += $(if $($(1)_SHADERS_DIR),$($(1)_SRCS_OBJS))
 TOOLKIT_WASM_DIRS += $($(1)_WASM_DIRS)
 TOOLKIT_WASM_OBJS += $($(1)_WASM_OBJS)
 TOOLKIT_SHARED_CONSUME += $($(1)_SHARED_CONSUME)
-ifdef BUILD_SHARED_PKGCONFIG
-TOOLKIT_GENERAL_CFLAGS += $(foreach name,$($(1)_SHARED_PKGCONFIG),$(shell pkg-config --cflags-only-I $(name)))
-TOOLKIT_GENERAL_CXXFLAGS += $(foreach name,$($(1)_SHARED_PKGCONFIG),$(shell pkg-config --cflags-only-I $(name)))
-endif
+TOOLKIT_GENERAL_CFLAGS += $(if $(BUILD_SHARED_PKGCONFIG),$(foreach name,$($(1)_SHARED_PKGCONFIG),$(shell pkg-config --cflags-only-I $(name))))
+TOOLKIT_GENERAL_CXXFLAGS += $(if $(BUILD_SHARED_PKGCONFIG),$(foreach name,$($(1)_SHARED_PKGCONFIG),$(shell pkg-config --cflags-only-I $(name))))
 $(foreach module,$($(1)_SHARED_CONSUME),$(eval $(call define_consumed,$(2),$(MODULE_$(module)))))
 endef # merge_module
 
@@ -171,8 +169,9 @@ TOOLKIT_SRCS_OBJS_WITH_SHADERS := $(foreach module,$(GLOBAL_MODULES),$(foreach m
 	$(if $($(module_name)_SHADERS_DIR),$($(module_name)_SRCS_OBJS))))
 endif # MAKE_4_1
 
-
 TOOLKIT_MODULES := $(BUILD_С_OUTDIR)/modules.info
+TOOLKIT_CACHED_FLAGS := $(BUILD_С_OUTDIR)/cached_flags.mk
+
 TOOLKIT_CACHED_MODULES := $(shell cat $(TOOLKIT_MODULES) 2> /dev/null)
 
 ifdef MAKE_4_1

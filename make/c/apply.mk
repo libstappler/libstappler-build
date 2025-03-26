@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2025 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@ endif # ANDROID
 else
 BUILD_LIBS :=
 endif # BUILD_SHARED
+
 
 # Список полных путей к прекомпилируемым заголовкам
 TOOLKIT_PRECOMPILED_HEADERS := $(call sp_toolkit_resolve_prefix_files,$(TOOLKIT_PRECOMPILED_HEADERS))
@@ -114,6 +115,28 @@ BUILD_LIB_LDFLAGS := \
 	$(TOOLKIT_LIB_LDFLAGS) \
 	$(if $(filter-out $(LOCAL_BUILD_SHARED),1),$(OSTYPE_STANDALONE_LDFLAGS))
 
+-include $(TOOLKIT_CACHED_FLAGS)
+
+BUILD_ALL_FLAGS := $(BUILD_EXEC_CFLAGS) $(BUILD_EXEC_CXXFLAGS) $(BUILD_LIB_CFLAGS) $(BUILD_LIB_CXXFLAGS)
+BUILD_ALL_FLAGS_CACHED := $(BUILD_EXEC_CFLAGS_CACHED) $(BUILD_EXEC_CXXFLAGS_CACHED) $(BUILD_LIB_CFLAGS_CACHED) $(BUILD_LIB_CXXFLAGS_CACHED)
+
+ifneq ($(BUILD_ALL_FLAGS),$(BUILD_ALL_FLAGS_CACHED))
+$(info [Compilation database] Need full rebuild, may take a while)
+$(shell $(GLOBAL_MKDIR) $(BUILD_С_OUTDIR))
+$(shell echo 'BUILD_EXEC_CFLAGS_CACHED:= $(BUILD_EXEC_CFLAGS)' > $(TOOLKIT_CACHED_FLAGS))
+$(shell echo 'BUILD_EXEC_CXXFLAGS_CACHED:= $(BUILD_EXEC_CXXFLAGS)' >> $(TOOLKIT_CACHED_FLAGS))
+$(shell echo 'BUILD_LIB_CFLAGS_CACHED:= $(BUILD_LIB_CFLAGS)' >> $(TOOLKIT_CACHED_FLAGS))
+$(shell echo 'BUILD_LIB_CXXFLAGS_CACHED:= $(BUILD_LIB_CXXFLAGS)' >> $(TOOLKIT_CACHED_FLAGS))
+
+$(TOOLKIT_CACHED_FLAGS):
+	@$(GLOBAL_MKDIR) $(BUILD_С_OUTDIR)
+	@echo 'BUILD_EXEC_CFLAGS_CACHED:= $(BUILD_EXEC_CFLAGS)' > $(TOOLKIT_CACHED_FLAGS)
+	@echo 'BUILD_EXEC_CXXFLAGS_CACHED:= $(BUILD_EXEC_CXXFLAGS)' >> $(TOOLKIT_CACHED_FLAGS)
+	@echo 'BUILD_LIB_CFLAGS_CACHED:= $(BUILD_LIB_CFLAGS)' >> $(TOOLKIT_CACHED_FLAGS)
+	@echo 'BUILD_LIB_CXXFLAGS_CACHED:= $(BUILD_LIB_CXXFLAGS)' >> $(TOOLKIT_CACHED_FLAGS)
+
+endif
+
 $(foreach target,$(TOOLKIT_PRECOMPILED_HEADERS),\
 	$(eval $(call BUILD_include_rule,$(target),\
 		$(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/lib_objs,$(target)))\
@@ -123,9 +146,6 @@ $(foreach target,$(TOOLKIT_PRECOMPILED_HEADERS),\
 	$(eval $(call BUILD_include_rule,$(target),\
 		$(call sp_toolkit_prefix_files_list,$(BUILD_С_OUTDIR)/exec_objs,$(target)))\
 	))
-
-$(foreach target,$(TOOLKIT_LIB_GCH),$(eval $(call BUILD_gch_rule,$(target),$(BUILD_LIB_CXXFLAGS))))
-$(foreach target,$(TOOLKIT_EXEC_GCH),$(eval $(call BUILD_gch_rule,$(target),$(BUILD_EXEC_CXXFLAGS))))
 
 # Список полных путей к компилируемым файлам фреймворка
 TOOLKIT_SRCS := $(call sp_toolkit_source_list, $(TOOLKIT_SRCS_DIRS), $(TOOLKIT_SRCS_OBJS))
@@ -147,135 +167,119 @@ BUILD_LIB_SRCS := \
 	$(BUILD_SRCS) \
 	$(if $(filter-out $(LOCAL_BUILD_SHARED),3),$(TOOLKIT_SRCS))
 
-$(foreach target,\
-	$(sort $(filter %.c,$(BUILD_LIB_SRCS))),\
-	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/lib_objs,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CFLAGS))))
-
-$(foreach target,\
-	$(sort $(filter %.cpp,$(BUILD_LIB_SRCS))),\
-	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/lib_objs,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
-
-$(foreach target,\
-	$(sort $(filter %.mm,$(BUILD_LIB_SRCS))),\
-	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/lib_objs,$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))))
-
-$(foreach target,\
-	$(sort $(filter %.c,$(BUILD_EXEC_SRCS))),\
-	$(eval $(call BUILD_c_rule,$(target),$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CFLAGS))))
-
-$(foreach target,\
-	$(sort $(filter %.cpp,$(BUILD_EXEC_SRCS))),\
-	$(eval $(call BUILD_cpp_rule,$(target),$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
-
-$(foreach target,\
-	$(sort $(filter %.mm,$(BUILD_EXEC_SRCS))),\
-	$(eval $(call BUILD_mm_rule,$(target),$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))))
-
 # Список объектных файлов, относящихся к фреймворку
 TOOLKIT_LIB_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/lib_objs,$(TOOLKIT_SRCS))
 TOOLKIT_EXEC_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(TOOLKIT_SRCS))
 
-# Список объектных файлов приложения
-BUILD_LIB_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/lib_objs,$(BUILD_SRCS))
-BUILD_EXEC_OBJS := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(BUILD_SRCS))
-
 BUILD_MAIN_OBJ := $(call sp_toolkit_object_list,$(BUILD_С_OUTDIR)/exec_objs,$(BUILD_MAIN_SRC))
 
 # Список терминов для подсчёта прогресса
-BUILD_LIB_WORDS := $(words $(TOOLKIT_LIB_GCH) $(BUILD_LIB_OBJS) $(TOOLKIT_LIB_OBJS))
-BUILD_EXEC_WORDS := $(words $(TOOLKIT_EXEC_GCH) $(BUILD_EXEC_OBJS) $(BUILD_MAIN_OBJ) $(TOOLKIT_EXEC_OBJS))
+BUILD_LIB_WORDS := $(words $(sort $(TOOLKIT_LIB_GCH) $(BUILD_LIB_SRCS)))
+BUILD_EXEC_WORDS := $(words $(sort $(TOOLKIT_EXEC_GCH) $(BUILD_EXEC_SRCS)))
 
 # Настраиваем шаблон прогресса
 include $(BUILD_ROOT)/utils/verbose.mk
 
-$(foreach obj,$(TOOLKIT_EXEC_GCH) $(BUILD_EXEC_OBJS) $(TOOLKIT_EXEC_OBJS) $(BUILD_MAIN_OBJ),\
-	$(eval $(call BUILD_EXEC_template,$(obj),$(LOCAL_EXECUTABLE),$(BUILD_EXEC_WORDS))))
+BUILD_LIB_OBJS :=
+BUILD_EXEC_OBJS :=
 
-$(foreach obj,$(TOOLKIT_LIB_GCH) $(BUILD_LIB_OBJS) $(TOOLKIT_LIB_OBJS),\
-	$(eval $(call BUILD_LIB_template,$(obj),$(LOCAL_LIBRARY),$(BUILD_LIB_WORDS))))
+define BUILD_add_target_lib
+BUILD_LIB_OBJS += $(1)
+endef
 
-BUILD_EXEC_OBJS := \
-	$(BUILD_EXEC_OBJS) \
-	$(TOOLKIT_EXEC_OBJS) \
-	$(BUILD_MAIN_OBJ)
+define BUILD_add_target_exec
+BUILD_EXEC_OBJS += $(1)
+endef
 
-BUILD_LIB_OBJS := \
-	$(BUILD_LIB_OBJS) \
-	$(if $(filter-out $(LOCAL_BUILD_SHARED),3),$(TOOLKIT_LIB_OBJS))
+ifdef LOCAL_LIBRARY
+sp_build_c_lib_rule_counted = \
+	$(eval \
+		$(call BUILD_c_rule,$(1),$(2),$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CFLAGS))\
+		$(call BUILD_LIB_template,$(2),$(LOCAL_LIBRARY),$(BUILD_LIB_WORDS))\
+	)\
+	$(eval $(call BUILD_add_target_lib,$(2)))
+
+sp_build_cpp_lib_rule_counted = \
+	$(eval \
+		$(call BUILD_cpp_rule,$(1),$(2),$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))\
+		$(call BUILD_LIB_template,$(2),$(LOCAL_LIBRARY),$(BUILD_LIB_WORDS))\
+	)\
+	$(eval $(call BUILD_add_target_lib,$(2)))
+
+sp_build_mm_lib_rule_counted = \
+	$(eval \
+		$(call BUILD_mm_rule,$(1),$(2),$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))\
+		$(call BUILD_LIB_template,$(2),$(LOCAL_LIBRARY),$(BUILD_LIB_WORDS))\
+	)\
+	$(eval $(call BUILD_add_target_lib,$(2)))
+
+$(foreach target,$(TOOLKIT_LIB_GCH),\
+	$(eval $(call BUILD_gch_rule,$(target),$(BUILD_LIB_CXXFLAGS)))\
+	$(eval $(call BUILD_LIB_template,$(target),$(LOCAL_LIBRARY),$(BUILD_LIB_WORDS))))
+
+$(foreach target,\
+	$(sort $(filter %.c,$(BUILD_LIB_SRCS))),\
+	$(call sp_build_c_lib_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/lib_objs)))
+
+$(foreach target,\
+	$(sort $(filter %.cpp,$(BUILD_LIB_SRCS))),\
+	$(call sp_build_cpp_lib_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/lib_objs)))
+
+$(foreach target,\
+	$(sort $(filter %.mm,$(BUILD_LIB_SRCS))),\
+	$(call sp_build_mm_lib_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/lib_objs)))
+endif
+
+ifdef LOCAL_EXECUTABLE
+sp_build_c_exec_rule_counted = \
+	$(eval \
+		$(call BUILD_c_rule,$(1),$(2),$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CFLAGS))\
+		$(call BUILD_EXEC_template,$(2),$(LOCAL_EXECUTABLE),$(BUILD_EXEC_WORDS))\
+	)\
+	$(eval $(call BUILD_add_target_exec,$(2)))
+
+sp_build_cpp_exec_rule_counted = \
+	$(eval \
+		$(call BUILD_cpp_rule,$(1),$(2),$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))\
+		$(call BUILD_EXEC_template,$(2),$(LOCAL_EXECUTABLE),$(BUILD_EXEC_WORDS))\
+	)\
+	$(eval $(call BUILD_add_target_exec,$(2)))
+
+sp_build_mm_exec_rule_counted = \
+	$(eval \
+		$(call BUILD_mm_rule,$(1),$(2),$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))\
+		$(call BUILD_EXEC_template,$(2),$(LOCAL_EXECUTABLE),$(BUILD_EXEC_WORDS))\
+	)\
+	$(eval $(call BUILD_add_target_exec,$(2)))
+
+$(foreach target,$(TOOLKIT_EXEC_GCH),\
+	$(eval $(call BUILD_gch_rule,$(target),$(BUILD_EXEC_CXXFLAGS)))\
+	$(eval $(call BUILD_EXEC_template,$(target),$(LOCAL_EXECUTABLE),$(BUILD_EXEC_WORDS))))
+
+$(foreach target,\
+	$(sort $(filter %.c,$(BUILD_EXEC_SRCS))),\
+	$(call sp_build_c_exec_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/exec_objs)))
+
+$(foreach target,\
+	$(sort $(filter %.cpp,$(BUILD_EXEC_SRCS))),\
+	$(call sp_build_cpp_exec_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/exec_objs)))
+
+$(foreach target,\
+	$(sort $(filter %.mm,$(BUILD_EXEC_SRCS))),\
+	$(call sp_build_mm_exec_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/exec_objs)))
+endif
 
 # include dependencies
 -include $(patsubst %.o,%.o.d,$(BUILD_EXEC_OBJS) $(BUILD_LIB_OBJS))
 -include $(patsubst %.h.gch,%.h.gch.d,$(TOOLKIT_EXEC_GCH) $(TOOLKIT_LIB_GCH))
 
+# CDB info
 ifdef LOCAL_EXECUTABLE
-BUILD_GENERAL_TARGET_CFLAGS := $(BUILD_EXEC_CFLAGS)
-BUILD_GENERAL_TARGET_CXXFLAGS := $(BUILD_EXEC_CXXFLAGS)
-BUILD_GENERAL_TARGET_PATH := $(BUILD_С_OUTDIR)/exec_objs
-BUILD_GENERAL_TARGET_SRCS := $(BUILD_EXEC_SRCS)
+BUILD_CDB_TARGET_SRCS := $(BUILD_EXEC_SRCS)
+BUILD_CDB_TARGET_OBJS := $(BUILD_EXEC_OBJS)
 else
-BUILD_GENERAL_TARGET_CFLAGS := $(BUILD_LIB_CFLAGS)
-BUILD_GENERAL_TARGET_CXXFLAGS := $(BUILD_LIB_CXXFLAGS)
-BUILD_GENERAL_TARGET_PATH := $(BUILD_С_OUTDIR)/lib_objs
-BUILD_GENERAL_TARGET_SRCS := $(BUILD_LIB_SRCS)
+BUILD_CDB_TARGET_SRCS := $(BUILD_LIB_SRCS)
+BUILD_CDB_TARGET_OBJS := $(BUILD_LIB_OBJS)
 endif
 
-ifdef MSYS
-sp_cdb_convert = $(subst \,\\,$(shell cygpath -w $(1)))
-sp_cdb_which = $(call sp_cdb_convert,$(shell which $(1)))
-else
-sp_cdb_convert = $(1)
-sp_cdb_which = $(shell which $(1))
-endif
-
-sp_cdb_process_arg = \
-	$(if $(filter -I%,$(1)),-I$(call sp_cdb_convert,$(patsubst -I%,%,$(1))),\
-		$(if $(filter /%,$(1)),$(call sp_cdb_convert,$(1)),$(1))\
-	)
-
-sp_cdb_split_arguments = \
-	"$(call sp_cdb_which,$(1))"\
-	$(foreach arg,$(2),,"$(firstword $(call sp_cdb_process_arg,$(arg)))")
-
-sp_make_cdb_file_c = {\
-	"directory":"$(call sp_cdb_convert,$(BUILD_WORKDIR))",\
-	"file":"$(call sp_cdb_convert,$(1))",\
-	"output":"$(call sp_cdb_convert,$(2))",\
-	"arguments":[$(call sp_cdb_split_arguments,$(GLOBAL_CC),$(call sp_compile_command,,$(OSTYPE_C_FILE),$(BUILD_GENERAL_TARGET_CFLAGS),$(1),$(2)))]},
-
-sp_make_cdb_file_cpp = {\
-	"directory":"$(call sp_cdb_convert,$(BUILD_WORKDIR))",\
-	"file":"$(call sp_cdb_convert,$(1))",\
-	"output":"$(call sp_cdb_convert,$(2))",\
-	"arguments":[$(call sp_cdb_split_arguments,$(GLOBAL_CPP),$(call sp_compile_command,,$(OSTYPE_CPP_FILE),$(BUILD_GENERAL_TARGET_CXXFLAGS),$(1),$(2)))]},
-
-sp_make_cdb_file_mm = {\
-	"directory":"$(call sp_cdb_convert,$(BUILD_WORKDIR))",\
-	"file":"$(call sp_cdb_convert,$(1))",\
-	"output":"$(call sp_cdb_convert,$(2))",\
-	"arguments":[$(call sp_cdb_split_arguments,$(GLOBAL_CPP),$(call sp_compile_command,,$(OSTYPE_MM_FILE),$(BUILD_GENERAL_TARGET_CXXFLAGS),$(1),$(2)))]},
-
-sp_cdb_write = $(shell echo '$(1)' >> $(2))
-
-sp_build_cdb = \
-	$(foreach file,$(sort $(filter %.cpp,$(1))),$(call sp_cdb_write,\
-		$(call sp_make_cdb_file_cpp,\
-			$(file),\
-			$(call sp_toolkit_object_list,$(BUILD_GENERAL_TARGET_PATH),$(file)) \
-		), \
-	$(BUILD_COMPILATION_DATABASE))) \
-	$(foreach file,$(sort $(filter %.c,$(1))),$(call sp_cdb_write,\
-		$(call sp_make_cdb_file_c,\
-			$(file),\
-			$(call sp_toolkit_object_list,$(BUILD_GENERAL_TARGET_PATH),$(file)) \
-		), \
-	$(BUILD_COMPILATION_DATABASE))) \
-	$(foreach file,$(sort $(filter %.mm,$(1))),$(call sp_cdb_write,\
-		$(call sp_make_cdb_file_mm,\
-			$(file),\
-			$(call sp_toolkit_object_list,$(BUILD_GENERAL_TARGET_PATH),$(file)) \
-		), \
-	$(BUILD_COMPILATION_DATABASE)))
-
-$(shell echo '[' > $(BUILD_COMPILATION_DATABASE))
-$(call sp_build_cdb,$(BUILD_GENERAL_TARGET_SRCS))
-$(shell echo ']' >> $(BUILD_COMPILATION_DATABASE))
+BUILD_CDB_TARGET_JSON := $(addsuffix .json,$(BUILD_CDB_TARGET_OBJS))

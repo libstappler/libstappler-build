@@ -1,4 +1,4 @@
-# Copyright (c) 2024 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2024-2025 Stappler LLC <admin@stappler.dev>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -39,9 +39,13 @@ include $(BUILD_ROOT)/utils/defaults.mk
 include $(BUILD_ROOT)/utils/find-recursive.mk
 include $(BUILD_ROOT)/utils/detect-build-number.mk
 
+ifdef STAPPLER_TARGET
 # Вычисляем компилятор и параметры компиляции
+
 include $(BUILD_ROOT)/shaders/compiler.mk
+
 include $(BUILD_ROOT)/c/compiler.mk
+
 include $(BUILD_ROOT)/wasm/compiler.mk
 
 # Вычисляем цели для сборки (библиотеки и приложение)
@@ -52,5 +56,10 @@ include $(BUILD_ROOT)/utils/resolve-modules.mk
 
 # Применяем к целевым файлам компиляторы
 include $(BUILD_ROOT)/shaders/apply.mk
+
 include $(BUILD_ROOT)/wasm/apply.mk
+
 include $(BUILD_ROOT)/c/apply.mk
+
+$(info Configured!)
+endif
