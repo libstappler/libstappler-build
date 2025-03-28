@@ -150,9 +150,9 @@ $(2).json: $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
 	@echo [Compilation database entry]: $(notdir $(1))
 
 $(2): \
-		$(1) $(3) $$(BUILD_COMPILATION_DATABASE) \
+		$(1) $(3) \
 		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
-		$(2).json $$(BUILD_SHADERS_EMBEDDED)
+		$$(BUILD_SHADERS_EMBEDDED) | $(2).json $$(BUILD_COMPILATION_DATABASE)
 	$$(call sp_compile_c,$(4))
 endef
 
@@ -172,9 +172,9 @@ $(2).json: $(1) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
 	@echo [Compilation database entry]: $(notdir $(1))
 
 $(2): \
-		$(1) $(3) $$(BUILD_COMPILATION_DATABASE) \
+		$(1) $(3) \
 		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
-		$(2).json $$(BUILD_SHADERS_EMBEDDED)
+		$$(BUILD_SHADERS_EMBEDDED) | $(2).json $$(BUILD_COMPILATION_DATABASE)
 	$$(call sp_compile_cpp,$(4))
 endef
 
@@ -194,9 +194,9 @@ $(2).json: $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
 	@echo [Compilation database entry]: $(notdir $(1))
 
 $(2): \
-		$(1) $(3) $$(BUILD_COMPILATION_DATABASE) \
+		$(1) $(3) \
 		$(if $(findstring $(1),$(TOOLKIT_SRCS_WITH_SHADERS)),$$(TOOLKIT_SHADERS_EMBEDDED) $$(TOOLKIT_SHADERS_LINKED) $$(TOOLKIT_SHADERS_COMPILED)) \
-		$(2).json $$(BUILD_SHADERS_EMBEDDED)
+		$$(BUILD_SHADERS_EMBEDDED) | $(2).json $$(BUILD_COMPILATION_DATABASE)
 	$$(call sp_compile_mm,$(4))
 endef
 
