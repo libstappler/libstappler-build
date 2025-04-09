@@ -18,14 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-define newline
-
-
-endef
-
-noop=
-space = $(noop) $(noop)
-
 BUILD_ALTLINUX_GROUP_LIB := System/Libraries
 BUILD_ALTLINUX_GROUP_DEVEL := Development/C++
 BUILD_ALTLINUX_DEVEL_SUMMARY := Module header and C/C++ headers for%s\n

@@ -76,9 +76,12 @@ $(2)_CONSUMED_BY := $(1)
 endef # define_consumed
 
 define merge_module =
+TOOLKIT_CONFIG_FLAGS += $(1) $($(1)_CONFIG_FLAGS)
+TOOLKIT_CONFIG_VALUES += $($(1)_CONFIG_VALUES)
+TOOLKIT_CONFIG_STRINGS += $($(1)_CONFIG_STRINGS)
 TOOLKIT_PRECOMPILED_HEADERS += $($(1)_PRECOMPILED_HEADERS)
-TOOLKIT_GENERAL_CFLAGS += $($(1)_FLAGS) $($(1)_GENERAL_CFLAGS) -D$(1)
-TOOLKIT_GENERAL_CXXFLAGS += $($(1)_FLAGS) $($(1)_GENERAL_CXXFLAGS) -D$(1)
+TOOLKIT_GENERAL_CFLAGS += $($(1)_FLAGS) $($(1)_GENERAL_CFLAGS)
+TOOLKIT_GENERAL_CXXFLAGS += $($(1)_FLAGS) $($(1)_GENERAL_CXXFLAGS)
 TOOLKIT_GENERAL_LDFLAGS += $($(1)_GENERAL_LDFLAGS)
 TOOLKIT_LIB_CFLAGS += $($(1)_LIB_CFLAGS)
 TOOLKIT_LIB_CXXFLAGS += $($(1)_LIB_CXXFLAGS)
@@ -135,10 +138,16 @@ $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$(eval $(call merge_module,$(module_name),$(module)))))
 else
 # Fallback for macOS
+TOOLKIT_CONFIG_FLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_CONFIG_FLAGS $(module_name))))
+TOOLKIT_CONFIG_VALUES := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_CONFIG_VALUES)))
+TOOLKIT_CONFIG_STRINGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_CONFIG_STRINGS)))
 TOOLKIT_GENERAL_CFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
-	$($(module_name)_FLAGS) $($(module_name)_GENERAL_CFLAGS) -D$(module_name)))
+	$($(module_name)_FLAGS) $($(module_name)_GENERAL_CFLAGS)))
 TOOLKIT_GENERAL_CXXFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
-	$($(module_name)_FLAGS) $($(module_name)_GENERAL_CXXFLAGS) -D$(module_name)))
+	$($(module_name)_FLAGS) $($(module_name)_GENERAL_CXXFLAGS)))
 TOOLKIT_GENERAL_LDFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$($(module_name)_GENERAL_LDFLAGS)))
 TOOLKIT_LIB_CFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\

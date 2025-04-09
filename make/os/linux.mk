@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2025 Stappler LLC <admin@stappler.dev>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -37,11 +37,13 @@ OSTYPE_DSO_SUFFIX := .so
 OSTYPE_LIB_SUFFIX := .a
 OSTYPE_LIB_PREFIX := lib
 
-OSTYPE_GENERAL_CFLAGS := -DLINUX -Wall -fvisibility=hidden
+OSTYPE_CONFIG_FLAGS := LINUX
+
+OSTYPE_GENERAL_CFLAGS := -Wall -fvisibility=hidden
 OSTYPE_LIB_CFLAGS := -fPIC -DPIC
 OSTYPE_EXEC_CFLAGS :=
 
-OSTYPE_GENERAL_CXXFLAGS :=  -DLINUX -Wall -Wno-overloaded-virtual -frtti -fvisibility=hidden -fvisibility-inlines-hidden
+OSTYPE_GENERAL_CXXFLAGS := -Wall -Wno-overloaded-virtual -frtti -fvisibility=hidden -fvisibility-inlines-hidden
 OSTYPE_LIB_CXXFLAGS := -fPIC -DPIC
 OSTYPE_EXEC_CXXFLAGS :=
 
@@ -74,9 +76,11 @@ endif
 
 ifeq ($(OSTYPE_ARCH),e2k)
 
-# warning about new/delete pairing for exceptions is wrong, since placement new in stappler is noexcept
-OSTYPE_GENERAL_CFLAGS += -w830 -DSP_DEDICATED_SIMD
-OSTYPE_GENERAL_CXXFLAGS += -w830 -DSP_DEDICATED_SIMD
+OSTYPE_CONFIG_FLAGS += SP_DEDICATED_SIMD
+
+# warning about new/delete pairing for exceptions is wrong, placement new in stappler is noexcept
+OSTYPE_GENERAL_CFLAGS += -w830
+OSTYPE_GENERAL_CXXFLAGS += -w830
 
 ifneq ($(OSTYPE_ARCH),$(UNAME_ARCH))
 

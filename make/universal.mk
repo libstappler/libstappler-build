@@ -68,6 +68,7 @@ android-clean: android-debug-clean
 
 android-export:
 	@$(MAKE) ANDROID_EXPORT=1 $(call sp_detect_platform,android) android-export
+	@$(MAKE) ANDROID_EXPORT=1 RELEASE=1 $(call sp_detect_platform,android) android-export
 
 android-debug:
 	@$(MAKE) ANDROID_EXPORT=1 $(call sp_detect_platform,android) android-export

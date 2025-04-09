@@ -35,7 +35,7 @@ XWIN_REPLACEMENTS_BIN := deps/windows/replacements/bin
 
 OSTYPE_PREBUILT_PATH := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/lib
 OSTYPE_INCLUDE := deps/windows/$(OSTYPE_ARCH)/$(OSTYPE_BUILD_TYPE)/include  $(XWIN_REPLACEMENTS_INCLUDE)
-OSTYPE_CFLAGS :=  -DWIN32 -DMSYS -Wall --target=$(OSTYPE_TARGET) -m64 -msse2 -D_MT \
+OSTYPE_CFLAGS := -Wall --target=$(OSTYPE_TARGET) -m64 -msse2 -D_MT \
 	-Wno-unqualified-std-cast-call -Wno-microsoft-include -Wno-nonportable-include-path -Wno-vla-cxx-extension
 OSTYPE_CPPFLAGS := -Wno-overloaded-virtual -frtti
 
@@ -51,6 +51,8 @@ OSTYPE_EXEC_SUFFIX := .exe
 OSTYPE_DSO_SUFFIX := .dll
 OSTYPE_LIB_SUFFIX := .lib
 OSTYPE_LIB_PREFIX :=
+
+OSTYPE_CONFIG_FLAGS := WIN32 MSYS
 
 OSTYPE_GENERAL_CFLAGS := $(OSTYPE_CFLAGS)
 OSTYPE_LIB_CFLAGS := -fPIC -DPIC -DSP_BUILD_SHARED_LIBRARY

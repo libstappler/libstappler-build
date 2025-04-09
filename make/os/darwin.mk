@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2023-2025 Stappler LLC <admin@stappler.dev>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,14 @@ OSTYPE_DEPS := deps/mac/$(OSTYPE_ARCH)
 OSTYPE_PREBUILT_PATH := $(OSTYPE_DEPS)/lib
 OSTYPE_INCLUDE := $(OSTYPE_DEPS)/include
 
-OSTYPE_GENERAL_CFLAGS := -DMACOS -DUSE_FILE32API -Wall \
+OSTYPE_CONFIG_FLAGS := MACOS
+
+OSTYPE_GENERAL_CFLAGS := -DUSE_FILE32API -Wall \
 	-Wnullability-completeness-on-arrays -Wno-documentation
 OSTYPE_LIB_CFLAGS := -fPIC -DPIC
 OSTYPE_EXEC_CFLAGS :=
 
-OSTYPE_GENERAL_CXXFLAGS :=  -DMACOS -DUSE_FILE32API -Wall -frtti \
+OSTYPE_GENERAL_CXXFLAGS :=  -DUSE_FILE32API -Wall -frtti \
 	-Wno-unqualified-std-cast-call -Wno-overloaded-virtual -Wno-nullability-completeness-on-arrays -Wno-documentation
 OSTYPE_LIB_CXXFLAGS := -fPIC -DPIC
 OSTYPE_EXEC_CXXFLAGS :=
