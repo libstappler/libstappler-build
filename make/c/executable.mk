@@ -40,6 +40,7 @@ BUILD_APP_CONFIG_VALUES := \
 	APPCONFIG_VERSION_API=$(APPCONFIG_VERSION_API) \
 	APPCONFIG_VERSION_REV=$(APPCONFIG_VERSION_REV) \
 	APPCONFIG_VERSION_BUILD=$(APPCONFIG_VERSION_BUILD) \
+	APPCONFIG_APP_PATH_COMMON=$(APPCONFIG_APP_PATH_COMMON) \
 	$(LOCAL_APPCONFIG_VALUES)
 
 BUILD_APP_CONFIG_STRINGS := \
@@ -54,14 +55,14 @@ $(eval $(call BUILD_config_header,$(BUILD_APP_CONFIG),appconfig,$(BUILD_APP_CONF
 # $(2) - value name
 # $(3) - value
 define BUILD_write_appconfig_value
-@echo '$(tab)SharedSymbol("$(2)", (void *)&$(2)),' >> $(1)$(newline)$(tab)
+@echo '$(tab)SharedSymbol("$(2)", &$(2)),' >> $(1)$(newline)$(tab)
 endef
 
 # $(1) - target path
 # $(2) - string name
 # $(3) - string value
 define BUILD_write_appconfig_string
-@echo '$(tab)SharedSymbol("$(2)", (void *)$(2)),' >> $(1)$(newline)$(tab)
+@echo '$(tab)SharedSymbol("$(2)", $(2)),' >> $(1)$(newline)$(tab)
 endef
 
 define BUILD_appconfig_source
