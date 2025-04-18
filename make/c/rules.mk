@@ -236,11 +236,13 @@ $(1): $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
 	@echo "" >> $(1)
 	$(foreach var,$(3),$(call BUILD_write_config_flag,$(1),$(var)))
 	@echo "" >> $(1)
+	@echo "#ifdef __cplusplus" >> $(1)
 	@echo "namespace stappler::$(2) {" >> $(1)
 	$(foreach var,$(4),$(call BUILD_write_config_value,$(1),$(firstword $(subst =, ,$(var))),$(lastword $(subst =, ,$(var)))))
 	$(foreach var,$(5),$(call BUILD_write_config_string,$(1),$(firstword $(subst =, ,$(var))),$(lastword $(subst =, ,$(var)))))
 	@echo "}" >> $(1)
 	@echo "" >> $(1)
+	@echo "#endif // __cplusplus" >> $(1)
 	@echo "#endif // STAPPLER_CONFIG_$(2)_H_" >> $(1)
 endef
 

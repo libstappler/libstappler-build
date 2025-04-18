@@ -46,8 +46,16 @@ APPCONFIG_APP_NAME ?=
 APPCONFIG_BUNDLE_NAME ?=
 endif
 
+# Where to search for a bundled files on a platforms without app bundle
 APPCONFIG_BUNDLE_PATH ?= $$EXEC_DIR:$$CWD
+
+# Linux: if >0 - use XDG locations for application files
+# Windows: if 1 - use System-provided AppData folder
+#             2 - use AppContainer paths for application files
+#             3 - run application itself in AppContainer
+#   (Container name: APPCONFIG_BUNDLE_NAME)
 APPCONFIG_APP_PATH_COMMON ?= 0
+
 APPCONFIG_VERSION_VARIANT ?= 0
 APPCONFIG_VERSION_API ?= 0
 APPCONFIG_VERSION_REV ?= 0
