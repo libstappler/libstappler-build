@@ -139,7 +139,7 @@ $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 else
 # Fallback for macOS
 TOOLKIT_CONFIG_FLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
-	$($(module_name)_CONFIG_FLAGS $(module_name))))
+	$($(module_name)_CONFIG_FLAGS) $(module_name)))
 TOOLKIT_CONFIG_VALUES := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$($(module_name)_CONFIG_VALUES)))
 TOOLKIT_CONFIG_STRINGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
@@ -162,6 +162,10 @@ TOOLKIT_EXEC_CXXFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_nam
 	$($(module_name)_EXEC_CXXFLAGS)))
 TOOLKIT_EXEC_LDFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$($(module_name)_EXEC_LDFLAGS)))
+TOOLKIT_SRCS_DIRS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_SRCS_DIRS)))
+TOOLKIT_SRCS_OBJS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_SRCS_OBJS)))
 TOOLKIT_INCLUDES_DIRS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$($(module_name)_INCLUDES_DIRS)))
 TOOLKIT_INCLUDES_OBJS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\

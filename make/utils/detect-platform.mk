@@ -32,6 +32,8 @@ ifeq ($(findstring MSYS_NT,$(UNAME)),MSYS_NT)
 	UNAME := $(shell uname -o)
 endif
 
+STAPPLER_PLATFORM ?=
+
 ifeq ($(STAPPLER_TARGET),android)
 ANDROID := 1
 STAPPLER_PLATFORM += ANDROID=1

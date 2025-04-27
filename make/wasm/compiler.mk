@@ -60,7 +60,7 @@ sp_toolkit_wit_list = $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT
 
 sp_local_wit_list = $(call sp_make_general_source_list,$(1),$(2),$(LOCAL_ROOT),*.wit,%.c %.cpp %.mm)
 
-sp_wasm_srcs_list =  $(call sp_make_general_source_list,$(1),$(2),$(3),*.cpp *.c,)
+sp_wasm_srcs_list =  $(call sp_make_general_source_list,$(1),$(2),$(3),*.cpp *.c)
 
 sp_wasm_include_list = $(call sp_make_general_include_list,$(1),$(2),$(3))
 
