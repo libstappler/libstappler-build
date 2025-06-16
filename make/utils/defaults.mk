@@ -97,6 +97,12 @@ GLOBAL_MKDIR ?= mkdir -p
 GLOBAL_AR ?= ar rcs
 
 # Проверяем хостовую систему, у Darwin нет опции -o для uname
+
+ifdef MACOS
+# Принудительная сборка MACOS, вероятно, для генерации файлов проекта
+UNAME := Darwin
+else
+
 UNAME := $(shell uname)
 
 ifneq ($(UNAME),Darwin)
@@ -105,6 +111,8 @@ endif
 
 ifeq ($(findstring MSYS_NT,$(UNAME)),MSYS_NT)
 	UNAME := $(shell uname -o)
+endif
+
 endif
 
 UNAME_ARCH ?= $(shell uname -m)
