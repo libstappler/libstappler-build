@@ -35,7 +35,8 @@ OSTYPE_LIB_CFLAGS := -fPIC -DPIC
 OSTYPE_EXEC_CFLAGS :=
 
 OSTYPE_GENERAL_CXXFLAGS :=  -DUSE_FILE32API -Wall -frtti \
-	-Wno-unqualified-std-cast-call -Wno-overloaded-virtual -Wno-nullability-completeness-on-arrays -Wno-documentation
+	-Wno-unqualified-std-cast-call -Wno-overloaded-virtual -Wno-nullability-completeness-on-arrays \
+	-Wno-documentation -Wno-vla-cxx-extension
 OSTYPE_LIB_CXXFLAGS := -fPIC -DPIC
 OSTYPE_EXEC_CXXFLAGS :=
 

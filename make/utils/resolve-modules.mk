@@ -132,7 +132,6 @@ $(foreach module,$(GLOBAL_MODULES),$(if $(MODULE_$(module)),,$(error Module not 
 
 $(info Enabled modules: $(GLOBAL_MODULES))
 
-
 ifdef MAKE_4_1
 $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$(eval $(call merge_module,$(module_name),$(module)))))
@@ -143,7 +142,9 @@ TOOLKIT_CONFIG_FLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name
 TOOLKIT_CONFIG_VALUES := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$($(module_name)_CONFIG_VALUES)))
 TOOLKIT_CONFIG_STRINGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
-	$($(module_name)_CONFIG_STRINGS)))
+	$($(module_name)_CONFIG_STRINGS) $(module_name)_NAME=$(module)))
+TOOLKIT_PRECOMPILED_HEADERS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_PRECOMPILED_HEADERS)))
 TOOLKIT_GENERAL_CFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$($(module_name)_FLAGS) $($(module_name)_GENERAL_CFLAGS)))
 TOOLKIT_GENERAL_CXXFLAGS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\

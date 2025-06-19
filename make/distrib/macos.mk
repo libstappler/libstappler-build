@@ -71,6 +71,7 @@ MACOS_LIB_LDFLAGS := \
 MACOS_HEADER_SEARCH_PATHS := \
 	/usr/local/include \
 	$(realpath $(TOOLKIT_INCLUDES)) \
+	$(realpath $(BUILD_INCLUDES)) \
 	$(BUILD_SHADERS_TARGET_INCLUDE_ALL)
 
 

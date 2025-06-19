@@ -37,7 +37,9 @@ sp_find_files = $(foreach pat,$(addprefix /,$(2)), $(wildcard $(addsuffix $(pat)
 #
 # Пример: $(call sp_find_dirs,$(SINGLE_DIR))
 
-sp_find_dirs = $(patsubst %/,%,$(sort $(dir $(wildcard $(addsuffix /*/,$(patsubst %/,%,$(1)))))))
+sp_find_dirs = $(strip $(foreach dir,\
+	$(patsubst %/,%,$(sort $(dir $(wildcard $(addsuffix /*/,$(patsubst %/,%,$(1))))))),\
+	$(if $(subst $(1),,$(dir)),$(dir))))
 
 
 ### sp_find_dirs_recursive : Возвращает полный рекурсивный список директорий для исходной директории (включая её саму)
@@ -46,10 +48,11 @@ sp_find_dirs = $(patsubst %/,%,$(sort $(dir $(wildcard $(addsuffix /*/,$(patsubs
 # Пример: $(call sp_find_dirs_recursive,$(SINGLE_DIR))
 
 sp_find_dirs_recursive = \
-	$(1) \
-	$(if $(call sp_find_dirs,$(1)),\
-		$(call sp_find_dirs,$(1) $(call sp_find_dirs_recursive,$(call sp_find_dirs,$(1)))))
+	$(if $(1),\
+		$(1) \
+		$(foreach dir,$(call sp_find_dirs,$(1)),$(call sp_find_dirs_recursive,$(dir))))
 
+$(info TEST CALL $(call sp_find_dirs,$(realpath .)))
 
 ### sp_find_recursive : Находит все файлы по шаблону рекурсивно в поддиректориях
 # $(1) - Целевая директория
