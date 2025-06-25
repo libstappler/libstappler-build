@@ -91,12 +91,12 @@ else
 sp_toolkit_transform_lib = $(1)
 endif
 
-ifdef RESOLVE_LIBS_REALPATH
+ifdef OSTYPE_LIBS_REALPATH
 sp_toolkit_resolve_libs = \
-	$(subst -l:,$(abspath $(1))/,$(call sp_toolkit_transform_lib,$(2)))
+	$(if $(BUILD_SHARED_DEPS),$(3),$(subst -l:,$(abspath $(1))/,$(call sp_toolkit_transform_lib,$(2))))
 else
 sp_toolkit_resolve_libs = \
-	$(addprefix -L,$(1)) $(call sp_toolkit_transform_lib,$(2))
+	$(addprefix -L,$(1)) $(call sp_toolkit_transform_lib,$(if $(BUILD_SHARED_DEPS),$(3),$(2)))
 endif
 
 sp_build_target_path = \

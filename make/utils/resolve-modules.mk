@@ -90,6 +90,7 @@ TOOLKIT_EXEC_CFLAGS += $($(1)_EXEC_CFLAGS)
 TOOLKIT_EXEC_CXXFLAGS += $($(1)_EXEC_CXXFLAGS)
 TOOLKIT_EXEC_LDFLAGS += $($(1)_EXEC_LDFLAGS)
 TOOLKIT_LIBS += $($(1)_LIBS)
+TOOLKIT_LIBS_SHARED += $($(1)_LIBS_SHARED)
 TOOLKIT_SRCS_DIRS += $($(1)_SRCS_DIRS)
 TOOLKIT_SRCS_OBJS += $($(1)_SRCS_OBJS)
 TOOLKIT_INCLUDES_DIRS += $($(1)_INCLUDES_DIRS)
@@ -177,6 +178,8 @@ TOOLKIT_SHADERS_INCLUDE := $(foreach module,$(GLOBAL_MODULES),$(foreach module_n
 	$($(module_name)_SHADERS_INCLUDE)))
 TOOLKIT_LIBS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$($(module_name)_LIBS)))
+TOOLKIT_LIBS_SHARED := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
+	$($(module_name)_LIBS_SHARED)))
 TOOLKIT_SRCS_DIRS_WITH_SHADERS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
 	$(if $($(module_name)_SHADERS_DIR),$($(module_name)_SRCS_DIRS))))
 TOOLKIT_SRCS_OBJS_WITH_SHADERS := $(foreach module,$(GLOBAL_MODULES),$(foreach module_name,$(MODULE_$(module)),\
