@@ -57,6 +57,10 @@ TOOLKIT_EXEC_GCH_DIRS = $(sort $(dir $(TOOLKIT_EXEC_GCH)))
 # Cписок директорий для включения от фреймворка
 TOOLKIT_INCLUDES := $(call sp_toolkit_include_list, $(TOOLKIT_INCLUDES_DIRS), $(TOOLKIT_INCLUDES_OBJS))
 
+ifdef ANDROID
+TOOLKIT_INCLUDES += $(NDK)/toolchains/llvm/prebuilt/$(ANDROID_HOST)/sysroot/usr/include
+endif
+
 # Cписок директорий для включения от приложения
 BUILD_INCLUDES := $(call sp_local_include_list,$(LOCAL_INCLUDES_DIRS),$(LOCAL_INCLUDES_OBJS))
 

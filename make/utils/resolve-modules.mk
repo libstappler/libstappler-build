@@ -38,11 +38,6 @@ endif # SHARED_PREFIX
 
 LOCAL_MODULES += stappler_build_debug_module
 
-ifeq ($(LINUX),1)
-# Special threatment for Alpine, replace execinfo.h with full libbacktrace
-LOCAL_MODULES +=  $(if $(strip $(shell cat /etc/os-release | grep "Alpine Linux")),stappler_backtrace)
-endif
-
 TOOLKIT_MODULE_LIST :=
 
 ifdef SHARED_PREFIX

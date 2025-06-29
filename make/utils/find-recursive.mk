@@ -52,8 +52,6 @@ sp_find_dirs_recursive = \
 		$(1) \
 		$(foreach dir,$(call sp_find_dirs,$(1)),$(call sp_find_dirs_recursive,$(dir))))
 
-$(info TEST CALL $(call sp_find_dirs,$(realpath .)))
-
 ### sp_find_recursive : Находит все файлы по шаблону рекурсивно в поддиректориях
 # $(1) - Целевая директория
 # $(2) - Список шаблонов
