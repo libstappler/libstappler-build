@@ -28,7 +28,7 @@ space = $(noop) $(noop)
 tab = $(noop)	$(noop)
 
 GLOBAL_STDXX ?= gnu++2a
-GLOBAL_STD ?= gnu11
+GLOBAL_STD ?= gnu17
 
 LOCAL_ROOT ?= .
 LOCAL_OUTDIR ?= stappler-build
