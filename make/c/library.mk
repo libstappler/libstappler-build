@@ -27,7 +27,7 @@ endef
 
 ifndef SHARED_PREFIX
 BUILD_LIB_CONFIG := $(BUILD_С_OUTDIR)/lib_objs/include/stappler-buildconfig.h
-$(eval $(call BUILD_config_header,$(BUILD_LIB_CONFIG),buildconfig,$(BUILD_CONFIG_FLAGS),$(BUILD_CONFIG_VALUES),$(BUILD_CONFIG_STRINGS)))
+$(eval $(call BUILD_config_header,$(BUILD_LIB_CONFIG),buildconfig,$(BUILD_CONFIG_FLAGS) BUILD_LIBRARY,$(BUILD_CONFIG_VALUES),$(BUILD_CONFIG_STRINGS)))
 endif
 
 sp_build_c_lib_rule_counted = \

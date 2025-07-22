@@ -27,7 +27,7 @@ endef
 
 ifndef SHARED_PREFIX
 BUILD_EXEC_CONFIG := $(BUILD_С_OUTDIR)/exec_objs/include/stappler-buildconfig.h
-$(eval $(call BUILD_config_header,$(BUILD_EXEC_CONFIG),buildconfig,$(BUILD_CONFIG_FLAGS),$(BUILD_CONFIG_VALUES),$(BUILD_CONFIG_STRINGS)))
+$(eval $(call BUILD_config_header,$(BUILD_EXEC_CONFIG),buildconfig,$(BUILD_CONFIG_FLAGS) BUILD_EXECUTABLE,$(BUILD_CONFIG_VALUES),$(BUILD_CONFIG_STRINGS)))
 endif
 
 # Генерируем конфигурацию приложения, доступную для чтения фреймворком
