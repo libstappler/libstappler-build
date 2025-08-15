@@ -191,7 +191,7 @@ $(2).json: $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
 	@echo '"file":"'$$(call sp_cdb_convert_cmd,$(1))'",' >> $$@
 	@echo '"output":"'$$(call sp_cdb_convert_cmd,$(2))'",' >> $$@
 	@echo '"arguments":[$$(call sp_cdb_split_arguments_cmd,$$(GLOBAL_CPP),$$(call sp_compile_command,,$$(OSTYPE_MM_FILE),$(4),$(1),$(2)))]' >> $$@
-	@echo "}," > $$@
+	@echo "}," >> $$@
 	@echo [Compilation database entry]: $(notdir $(1))
 
 $(2): \

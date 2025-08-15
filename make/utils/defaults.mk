@@ -146,3 +146,14 @@ MAKE_4_1 := 1
 else
 $(info COMPATIBILITY MODE: Some functions may not work. Minimal required make version: 4.1)
 endif
+
+# VULKAN_SDK_PREFIX ?= ~/VulkanSDK/<version>/<OS>
+# GLSL -> SpirV compiler (default - glslangValidator from https://github.com/KhronosGroup/glslang/releases/tag/master-tot)
+ifdef VULKAN_SDK_PREFIX
+GLSLC ?= $(call sp_os_path,$(VULKAN_SDK_PREFIX)/bin/glslangValidator)
+SPIRV_LINK ?= $(call sp_os_path,$(VULKAN_SDK_PREFIX)/bin/spirv-link)
+else
+VULKAN_SDK_PREFIX = /usr/local
+GLSLC ?= glslangValidator
+SPIRV_LINK ?= spirv-link
+endif

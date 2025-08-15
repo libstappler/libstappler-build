@@ -18,16 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# VULKAN_SDK_PREFIX ?= ~/VulkanSDK/<version>/<OS>
-# GLSL -> SpirV compiler (default - glslangValidator from https://github.com/KhronosGroup/glslang/releases/tag/master-tot)
-ifdef VULKAN_SDK_PREFIX
-GLSLC ?= $(call sp_os_path,$(VULKAN_SDK_PREFIX)/bin/glslangValidator)
-SPIRV_LINK ?= $(call sp_os_path,$(VULKAN_SDK_PREFIX)/bin/spirv-link)
-else
-GLSLC ?= glslangValidator
-SPIRV_LINK ?= spirv-link
-endif
-
 BUILD_SHADERS_OUTDIR := $(BUILD_OUTDIR)/$(notdir $(GLSLC))
 
 sp_compile_glsl = $(GLOBAL_QUIET_GLSLC) $(GLOBAL_MKDIR) $(dir $@); $(GLSLC) \
