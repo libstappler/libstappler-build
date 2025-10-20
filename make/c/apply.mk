@@ -57,10 +57,6 @@ TOOLKIT_EXEC_GCH_DIRS = $(sort $(dir $(TOOLKIT_EXEC_GCH)))
 # Cписок директорий для включения от фреймворка
 TOOLKIT_INCLUDES := $(call sp_toolkit_include_list, $(TOOLKIT_INCLUDES_DIRS), $(TOOLKIT_INCLUDES_OBJS))
 
-ifdef ANDROID
-TOOLKIT_INCLUDES += $(NDK)/toolchains/llvm/prebuilt/$(ANDROID_HOST)/sysroot/usr/include
-endif
-
 # Cписок директорий для включения от приложения
 BUILD_INCLUDES := $(call sp_local_include_list,$(LOCAL_INCLUDES_DIRS),$(LOCAL_INCLUDES_OBJS))
 
@@ -176,10 +172,11 @@ BUILD_SRCS := $(call sp_local_source_list,$(LOCAL_SRCS_DIRS),$(LOCAL_SRCS_OBJS))
 
 BUILD_MAIN_SRC := $(if $(LOCAL_MAIN),$(realpath $(addprefix $(LOCAL_ROOT)/,$(LOCAL_MAIN))))
 
+# Список файлов для сборки приложения
+# Для live reload пользовательские файлы собираются как библиотека
 BUILD_EXEC_SRCS := \
 	$(TOOLKIT_SRCS) \
-	$(BUILD_SRCS) \
-	$(BUILD_MAIN_SRC)
+	$(if $(filter-out $(LOCAL_EXEC_LIVE_RELOAD),1),$(BUILD_SRCS) $(BUILD_MAIN_SRC))
 
 BUILD_LIB_SRCS := \
 	$(BUILD_SRCS) \

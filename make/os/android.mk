@@ -41,9 +41,31 @@ OSTYPE_LIBS_REALPATH := 1
 GLOBAL_CC := ndk-build
 GLOBAL_CPP := ndk-build
 
+ifeq ($(UNAME),Darwin)
+ANDROID_HOST ?= darwin-x86_64
+else ifeq ($(UNAME),Msys)
+ANDROID_HOST ?= windows-x86_64
+else
 ANDROID_HOST ?= linux-x86_64
+endif
+
 ANDROID_EXPORT_PREFIX ?= $(GLOBAL_ROOT)
 ANDROID_EXPORT_PATH := $(if $(LOCAL_ROOT),,$(GLOBAL_ROOT)/)$(LOCAL_OUTDIR)/android
+ANDROID_SYSROOT := $(NDK)/toolchains/llvm/prebuilt/$(ANDROID_HOST)/sysroot
+ANDROID_TARGET := aarch64-linux-android24
+
+OSTYPE_GENERAL_CFLAGS := -Wall -fvisibility=hidden --sysroot=$(ANDROID_SYSROOT) --target=$(ANDROID_TARGET)
+OSTYPE_LIB_CFLAGS := -fPIC -DPIC
+OSTYPE_EXEC_CFLAGS :=
+
+OSTYPE_GENERAL_CXXFLAGS := -Wall -Wno-overloaded-virtual -frtti -fvisibility=hidden -fvisibility-inlines-hidden \
+	--sysroot=$(ANDROID_SYSROOT) --target=$(ANDROID_TARGET)
+OSTYPE_LIB_CXXFLAGS := -fPIC -DPIC
+OSTYPE_EXEC_CXXFLAGS :=
+
+OSTYPE_GENERAL_LDFLAGS :=
+OSTYPE_EXEC_LDFLAGS := 
+OSTYPE_LIB_LDFLAGS := -rdynamic -Wl,--exclude-libs,ALL
 
 android_lib_list = \
 	$(foreach lib,$(filter %.a,$(1)),$(2)_$(basename $(subst -,_,$(notdir $(lib))))_generic)
