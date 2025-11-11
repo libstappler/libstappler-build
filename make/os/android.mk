@@ -39,7 +39,7 @@ OSTYPE_CONFIG_FLAGS := ANDROID
 OSTYPE_LIBS_REALPATH := 1
 
 GLOBAL_CC := ndk-build
-GLOBAL_CPP := ndk-build
+GLOBAL_CXX := ndk-build
 
 ifeq ($(UNAME),Darwin)
 ANDROID_HOST ?= darwin-x86_64

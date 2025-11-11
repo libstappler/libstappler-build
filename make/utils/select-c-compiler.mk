@@ -1,4 +1,5 @@
 # Copyright (c) 2023-2025 Stappler LLC <admin@stappler.dev>
+# Copyright (c) 2025 Stappler Team <admin@stappler.org>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,55 +22,45 @@
 # Выбираем компиляторы, предпочитаем gcc/g++ если не заданы
 # Устанавливаем флаг, если компилируем с clang
 
-ifdef XWIN
-# Для XWIN нужен clang не менее 16.0, другие компиляторы не поддерживаются
-include $(BUILD_ROOT)/utils/define-clang-16.mk
-endif
-
-ifeq ($(UNAME),Msys)
-# Для MSYS нужен clang не менее 16.0, другие компиляторы не поддерживаются
-include $(BUILD_ROOT)/utils/define-clang-16.mk
-endif
-
 ifeq ($(UNAME),Darwin)
 
-GLOBAL_CPP ?= clang++
+GLOBAL_CXX ?= clang++
 GLOBAL_CC ?= clang
 
 else
 
 ifeq ($(CLANG),1)
-GLOBAL_CPP ?= clang++
+GLOBAL_CXX ?= clang++
 GLOBAL_CC ?= clang
 endif
 
 ifeq ($(STAPPLER_ARCH),e2k)
 ifneq ($(STAPPLER_ARCH),$(UNAME_ARCH))
-GLOBAL_CPP ?= e2k-linux-l++
+GLOBAL_CXX ?= e2k-linux-l++
 GLOBAL_CC ?= e2k-linux-lcc
 endif
 endif
 
 ifeq ($(STAPPLER_ARCH),aarch64)
 ifneq ($(STAPPLER_ARCH),$(UNAME_ARCH))
-GLOBAL_CPP ?= aarch64-linux-gnu-g++
+GLOBAL_CXX ?= aarch64-linux-gnu-g++
 GLOBAL_CC ?= aarch64-linux-gnu-gcc
 endif
 endif
 
 endif
 
-ifndef GLOBAL_CPP
+ifndef GLOBAL_CXX
 	ifdef MINGW
-		GLOBAL_CPP := $(MINGW)-g++
+		GLOBAL_CXX := $(MINGW)-g++
 	else
-		GLOBAL_CPP := g++
+		GLOBAL_CXX := g++
 	endif # ifdef MINGW
 else
-	ifneq (,$(findstring clang,$(GLOBAL_CPP)))
+	ifneq (,$(findstring clang,$(GLOBAL_CXX)))
 		CLANG := 1
 	endif
-endif # ifndef GLOBAL_CPP
+endif # ifndef GLOBAL_CXX
 
 ifndef GLOBAL_CC
 	ifdef MINGW

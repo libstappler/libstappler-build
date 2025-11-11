@@ -101,6 +101,13 @@ sp_build_c_exec_rule_counted = \
 	)\
 	$(eval $(call BUILD_add_target_exec,$(2)))
 
+sp_build_S_exec_rule_counted = \
+	$(eval \
+		$(call BUILD_S_rule,$(1),$(2),$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CFLAGS))\
+		$(call BUILD_EXEC_template,$(2),$(LOCAL_EXECUTABLE),$(BUILD_EXEC_WORDS))\
+	)\
+	$(eval $(call BUILD_add_target_exec,$(2)))
+
 sp_build_cpp_exec_rule_counted = \
 	$(eval \
 		$(call BUILD_cpp_rule,$(1),$(2),$(TOOLKIT_EXEC_GCH),$(BUILD_EXEC_CXXFLAGS))\
@@ -122,6 +129,10 @@ $(foreach target,$(TOOLKIT_EXEC_GCH),\
 $(foreach target,\
 	$(sort $(filter %.c,$(BUILD_EXEC_SRCS))),\
 	$(call sp_build_c_exec_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/exec_objs)))
+
+$(foreach target,\
+	$(sort $(filter %.S,$(BUILD_EXEC_SRCS))),\
+	$(call sp_build_S_exec_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/exec_objs)))
 
 $(foreach target,\
 	$(sort $(filter %.cpp,$(BUILD_EXEC_SRCS))),\

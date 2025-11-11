@@ -18,11 +18,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+BUILD_LIBRARY_PATH := $(OSTYPE_PREBUILT_PATH)
+ifdef TOOLCHAIN_SYSROOT
+BUILD_LIBRARY_PATH := $(TOOLCHAIN_SYSROOT)/lib
+endif
+
 # Список библиотек для включения в конечное приложение
 # Для Android в пути к библоитеке используется символ-заместитель для архитектуры, потому используется abspath вместо realpath
 ifndef BUILD_SHARED
 ifdef ANDROID
-BUILD_LIBS := $(call sp_toolkit_resolve_libs, $(abspath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH))), $(TOOLKIT_LIBS)) $(LDFLAGS)
+BUILD_LIBS := $(call sp_toolkit_resolve_libs, $(abspath $(addprefix $(GLOBAL_ROOT)/,$(BUILD_LIBRARY_PATH))), $(TOOLKIT_LIBS)) $(LDFLAGS)
 else
 RPATH_PREFIX := -Wl,-rpath,
 BUILD_LIBS := \
@@ -30,7 +35,7 @@ BUILD_LIBS := \
 		$(addprefix -L,$(SHARED_LIBDIR))\
 		$(if $(SHARED_RPATH),$(addprefix $(RPATH_PREFIX),$(SHARED_RPATH)))) \
 	$(call sp_toolkit_resolve_libs,\
-		$(if $(SHARED_LIBDIR),,$(if $(BUILD_SHARED_DEPS),,$(realpath $(addprefix $(GLOBAL_ROOT)/,$(OSTYPE_PREBUILT_PATH))))),\
+		$(if $(SHARED_LIBDIR),,$(if $(BUILD_SHARED_DEPS),,$(realpath $(addprefix $(GLOBAL_ROOT)/,$(BUILD_LIBRARY_PATH))))),\
 		$(TOOLKIT_LIBS),$(TOOLKIT_LIBS_SHARED))\
 	$(LDFLAGS)
 endif # ANDROID
@@ -114,13 +119,13 @@ BUILD_GENERAL_LDFLAGS := \
 	$(call sp_toolkit_resolve_libs, $(LOCAL_LIBS))
 
 BUILD_EXEC_LDFLAGS := \
-	$(BUILD_GENERAL_LDFLAGS) \
 	$(GLOBAL_EXEC_LDFLAGS) \
+	$(BUILD_GENERAL_LDFLAGS) \
 	$(TOOLKIT_EXEC_LDFLAGS)
 
 BUILD_LIB_LDFLAGS := \
-	$(BUILD_GENERAL_LDFLAGS) \
 	$(GLOBAL_LIB_LDFLAGS) \
+	$(BUILD_GENERAL_LDFLAGS) \
 	$(TOOLKIT_LIB_LDFLAGS) \
 	$(if $(filter-out $(LOCAL_BUILD_SHARED),1),$(OSTYPE_STANDALONE_LDFLAGS))
 
@@ -214,6 +219,6 @@ endif
 -include $(patsubst %.o,%.o.d,$(BUILD_EXEC_OBJS) $(BUILD_LIB_OBJS))
 -include $(patsubst %.h.gch,%.h.gch.d,$(TOOLKIT_EXEC_GCH) $(TOOLKIT_LIB_GCH))
 
-BUILD_CDB_TARGET_JSON := $(addsuffix .json,$(BUILD_CDB_TARGET_OBJS))
+BUILD_CDB_TARGET_JSON := $(addsuffix .json,$(filter-out %.S.o,$(BUILD_CDB_TARGET_OBJS)))
 
 $(eval $(call BUILD_cdb,$(BUILD_COMPILATION_DATABASE),$(BUILD_CDB_TARGET_JSON)))

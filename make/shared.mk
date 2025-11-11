@@ -153,7 +153,7 @@ shared_get_target_location = \
 define make_rule_module_lib =
 $(1): $(2) $(3) $(BUILD_COMPILATION_DATABASE)
 	@$(GLOBAL_MKDIR) $(dir $(1))
-	$(GLOBAL_QUIET_LINK_SHARED) $(GLOBAL_CPP) -shared $(2) $(BUILD_LIB_LDFLAGS) $(4) -o $(1)
+	$(GLOBAL_QUIET_LINK_SHARED) $(GLOBAL_CXX) -shared $(2) $(BUILD_LIB_LDFLAGS) $(4) -o $(1)
 endef # make_rule_module_lib
 
 

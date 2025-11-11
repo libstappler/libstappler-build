@@ -38,6 +38,10 @@ endif # SHARED_PREFIX
 
 LOCAL_MODULES += stappler_build_debug_module
 
+ifeq ($(TOOLCHAIN_REQUIRES_STAPPLER_ABI),1)
+LOCAL_MODULES += stappler_abi
+endif
+
 TOOLKIT_MODULE_LIST :=
 
 ifdef SHARED_PREFIX

@@ -37,6 +37,13 @@ sp_build_c_lib_rule_counted = \
 	)\
 	$(eval $(call BUILD_add_target_lib,$(2)))
 
+sp_build_S_lib_rule_counted = \
+	$(eval \
+		$(call BUILD_S_rule,$(1),$(2),$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CFLAGS))\
+		$(call BUILD_LIB_template,$(2),$(LOCAL_LIBRARY),$(BUILD_LIB_WORDS))\
+	)\
+	$(eval $(call BUILD_add_target_lib,$(2)))
+
 sp_build_cpp_lib_rule_counted = \
 	$(eval \
 		$(call BUILD_cpp_rule,$(1),$(2),$(TOOLKIT_LIB_GCH),$(BUILD_LIB_CXXFLAGS))\
@@ -58,6 +65,10 @@ $(foreach target,$(TOOLKIT_LIB_GCH),\
 $(foreach target,\
 	$(sort $(filter %.c,$(BUILD_LIB_SRCS))),\
 	$(call sp_build_c_lib_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/lib_objs)))
+
+$(foreach target,\
+	$(sort $(filter %.S,$(BUILD_LIB_SRCS))),\
+	$(call sp_build_S_lib_rule_counted,$(target),$(call sp_build_target_path,$(target),$(BUILD_С_OUTDIR)/lib_objs)))
 
 $(foreach target,\
 	$(sort $(filter %.cpp,$(BUILD_LIB_SRCS))),\

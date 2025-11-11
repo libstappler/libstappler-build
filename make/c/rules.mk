@@ -40,21 +40,24 @@ endif
 sp_compile_command = $(1) $(2) $(call sp_compile_dep, $(5), $(3)) -c -o $(5) $(4)
 
 sp_compile_gch = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@);\
-	$(call sp_compile_command,$(GLOBAL_CPP),$(OSTYPE_GCH_FILE),$(1),$<,$@)
+	$(call sp_compile_command,$(GLOBAL_CXX),$(OSTYPE_GCH_FILE),$(1),$<,$@)
+
+sp_compile_S = $(GLOBAL_QUIET_CC) $(GLOBAL_MKDIR) $(dir $@);\
+	$(call sp_compile_command,$(GLOBAL_CC),,$(1),$<,$@)
 
 sp_compile_c = $(GLOBAL_QUIET_CC) $(GLOBAL_MKDIR) $(dir $@);\
 	$(call sp_compile_command,$(GLOBAL_CC),$(OSTYPE_C_FILE),$(1),$<,$@)
 
 sp_compile_cpp = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@);\
-	$(call sp_compile_command,$(GLOBAL_CPP),$(OSTYPE_CPP_FILE),$(1),$<,$@)
+	$(call sp_compile_command,$(GLOBAL_CXX),$(OSTYPE_CPP_FILE),$(1),$<,$@)
 
 sp_compile_mm = $(GLOBAL_QUIET_CPP) $(GLOBAL_MKDIR) $(dir $@);\
-	$(call sp_compile_command,$(GLOBAL_CPP),$(OSTYPE_MM_FILE),$(1) -fobjc-arc,$<,$@)
+	$(call sp_compile_command,$(GLOBAL_CXX),$(OSTYPE_MM_FILE),$(1) -fobjc-arc,$<,$@)
 
 sp_copy_header = @$(GLOBAL_MKDIR) $(dir $@); cp -f $< $@
 
 sp_toolkit_source_list_c = $(call sp_make_general_source_list,$(1),$(2),$(GLOBAL_ROOT),\
-	*.cpp *.c $(if $(BUILD_OBJC),*.mm),\
+	*.cpp *.c *.S $(if $(BUILD_OBJC),*.mm),\
 	$(if $(BUILD_OBJC),,%.mm))
 
 sp_toolkit_source_list = $(call sp_toolkit_source_list_c,$(1),$(filter-out %.wit,$(2)))
@@ -75,7 +78,7 @@ sp_toolkit_include_flags = \
 	$(addprefix -I,$(sort $(dir $(1)))) $(addprefix -I,$(2))
 
 sp_local_source_list_c = $(call sp_make_general_source_list,$(1),$(2),$(LOCAL_ROOT),\
-	*.cpp *.c $(if $(BUILD_OBJC),*.mm),\
+	*.cpp *.c *.S $(if $(BUILD_OBJC),*.mm),\
 	$(if $(BUILD_OBJC),,%.mm))
 
 sp_local_source_list = $(call sp_local_source_list_c,$(1),$(filter-out %.wit,$(2)))
@@ -140,7 +143,7 @@ endef
 # $(3) - precompiled headers
 # $(4) - compilation flags
 define BUILD_c_rule
-$(2).json: $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
+$(2).json: $(1) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
 	@$(GLOBAL_MKDIR) $$(dir $$@)
 	@echo "{" > $$@
 	@echo '"directory":"'$$(call sp_cdb_convert_cmd,$$(BUILD_WORKDIR))'",' >> $$@
@@ -157,6 +160,12 @@ $(2): \
 	$$(call sp_compile_c,$(4))
 endef
 
+define BUILD_S_rule
+$(2): \
+		$(1) $(3)
+	$$(call sp_compile_S,$(4))
+endef
+
 # $(1) - source path
 # $(2) - target path
 # $(3) - precompiled headers
@@ -168,7 +177,7 @@ $(2).json: $(1) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
 	@echo '"directory":"'$$(call sp_cdb_convert_cmd,$$(BUILD_WORKDIR))'",' >> $$@
 	@echo '"file":"'$$(call sp_cdb_convert_cmd,$(1))'",' >> $$@
 	@echo '"output":"'$$(call sp_cdb_convert_cmd,$(2))'",' >> $$@
-	@echo '"arguments":[$$(call sp_cdb_split_arguments_cmd,$$(GLOBAL_CPP),$$(call sp_compile_command,,$$(OSTYPE_CPP_FILE),$(4),$(1),$(2)))]' >> $$@
+	@echo '"arguments":[$$(call sp_cdb_split_arguments_cmd,$$(GLOBAL_CXX),$$(call sp_compile_command,,$$(OSTYPE_CPP_FILE),$(4),$(1),$(2)))]' >> $$@
 	@echo "}," >> $$@
 	@echo [Compilation database entry]: $(notdir $(1))
 
@@ -184,13 +193,13 @@ endef
 # $(3) - precompiled headers
 # $(4) - compilation flags
 define BUILD_mm_rule
-$(2).json: $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
+$(2).json: $(1) $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS)
 	@$(GLOBAL_MKDIR) $$(dir $$@)
 	@echo "{" > $$@
 	@echo '"directory":"'$$(call sp_cdb_convert_cmd,$$(BUILD_WORKDIR))'",' >> $$@
 	@echo '"file":"'$$(call sp_cdb_convert_cmd,$(1))'",' >> $$@
 	@echo '"output":"'$$(call sp_cdb_convert_cmd,$(2))'",' >> $$@
-	@echo '"arguments":[$$(call sp_cdb_split_arguments_cmd,$$(GLOBAL_CPP),$$(call sp_compile_command,,$$(OSTYPE_MM_FILE),$(4),$(1),$(2)))]' >> $$@
+	@echo '"arguments":[$$(call sp_cdb_split_arguments_cmd,$$(GLOBAL_CXX),$$(call sp_compile_command,,$$(OSTYPE_MM_FILE),$(4),$(1),$(2)))]' >> $$@
 	@echo "}," >> $$@
 	@echo [Compilation database entry]: $(notdir $(1))
 
@@ -256,7 +265,6 @@ define BUILD_cdb
 $(1): $$(LOCAL_MAKEFILE) $$(TOOLKIT_MODULES) $$(TOOLKIT_CACHED_FLAGS) $(2)
 	@echo "[" > $(1)
 	$(foreach file,$(2),$(call BUILD_write_cdb_entry,$(1),$(file)))
-	@cat $$(BUILD_CDB_TARGET_JSON) >> $(1)
 	@echo "]" >> $(1)
 	@echo [Compilation database] $(1)
 endef

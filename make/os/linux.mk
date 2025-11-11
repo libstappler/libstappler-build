@@ -22,15 +22,9 @@ OSTYPE_IS_LINUX := 1
 
 OSTYPE_ARCH ?= $(STAPPLER_ARCH)
 
-ifndef BUILD_SHARED
-OSTYPE_DEPS := deps/linux/$(OSTYPE_ARCH)
-OSTYPE_PREBUILT_PATH := $(OSTYPE_DEPS)/lib
-OSTYPE_INCLUDE := $(OSTYPE_DEPS)/include
-else
 OSTYPE_DEPS :=
 OSTYPE_PREBUILT_PATH :=
 OSTYPE_INCLUDE :=
-endif
 
 OSTYPE_EXEC_SUFFIX :=
 OSTYPE_DSO_SUFFIX := .so
@@ -57,13 +51,15 @@ $(info Build for $(STAPPLER_ARCH))
 
 # ldgold only tested for x86_64 linux
 # For others - use default ld
+ifndef TOOLCHAIN_TARGET
 ifeq ($(OSTYPE_ARCH),x86_64)
 	OSTYPE_GENERAL_LDFLAGS += -fuse-ld=gold
+endif
 endif
 
 ifeq ($(CLANG),1)
 	OSTYPE_GENERAL_CXXFLAGS += -Wno-unneeded-internal-declaration -Wno-gnu-string-literal-operator-template \
-		-Wno-vla-cxx-extension -Wno-unqualified-std-cast-call -Wno-unused-includes
+		-Wno-vla-cxx-extension -Wno-unqualified-std-cast-call
 else
 	OSTYPE_GENERAL_CXXFLAGS += -Wno-class-memaccess
 endif

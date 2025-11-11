@@ -40,7 +40,7 @@ GLOBAL_QUIET_WASM_CXX =
 GLOBAL_QUIET_WASM_LINK =
 else
 GLOBAL_QUIET_CC = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CC))] $(notdir $@) ;
-GLOBAL_QUIET_CPP = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CPP))] $(notdir $@) ;
+GLOBAL_QUIET_CPP = @ echo $(call sp_counter_text) [$(notdir $(GLOBAL_CXX))] $(notdir $@) ;
 GLOBAL_QUIET_LINK = @ echo [Link] $@ ;
 GLOBAL_QUIET_LINK_SHARED = @ echo [Link] $$(notdir $$@) ;
 GLOBAL_QUIET_GLSLC = @ echo [$(notdir $(GLSLC))] $(notdir $(abspath $(dir $(1))))/$(notdir $(1)) ;
