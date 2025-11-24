@@ -25,9 +25,9 @@ NDK ?= $(ANDROID_NDK_ROOT)
 
 OSTYPE_IS_ANDROID := 1
 
-OSTYPE_DEPS := deps/android/universal
-OSTYPE_PREBUILT_PATH := deps/android/$$(TARGET_ARCH_ABI)/lib
-OSTYPE_INCLUDE :=  deps/android/$$(TARGET_ARCH_ABI)/include
+OSTYPE_DEPS := build/toolchains/targets/android
+OSTYPE_PREBUILT_PATH := $(OSTYPE_DEPS)/$$(TARGET_ARCH_ABI)/lib
+OSTYPE_INCLUDE :=  $(OSTYPE_DEPS)/$$(TARGET_ARCH_ABI)/include
 
 OSTYPE_EXEC_SUFFIX :=
 OSTYPE_DSO_SUFFIX := .so
